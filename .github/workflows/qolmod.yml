@@ -10,14 +10,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [Android32, Android64, iOS]
+        target: [Android32, Android64]
         include:
           - target: Android32
             os: ubuntu-latest
           - target: Android64
             os: ubuntu-latest
-          - target: iOS
-            os: macos-latest
     name: ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -27,6 +25,8 @@ jobs:
         uses: geode-sdk/build-geode-mod@main
         with:
           sdk: "nightly"
+          bindings: "Exodi-dio/bindings"
+          bindings-ref: "main"
           path: qolmod
           target: ${{ matrix.target }}
           build-config: Release
@@ -61,8 +61,7 @@ jobs:
         run: |
           geode package merge --zstd \
             artifacts/geode-build-android32/thesillydoggo.qolmod.geode \
-            artifacts/geode-build-android64/thesillydoggo.qolmod.geode \
-            artifacts/geode-build-ios/thesillydoggo.qolmod.geode
+            artifacts/geode-build-android64/thesillydoggo.qolmod.geode
 
       - uses: actions/upload-artifact@v4
         with:
