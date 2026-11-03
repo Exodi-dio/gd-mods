@@ -146,7 +146,7 @@ float StartposSwitcherUI::getPercentForObject(GameObject* go)
 
 void StartposSwitcherUI::updateUI()
 {
-    updateDisplayedOpacity(std::lerp<float>(float(regularOpacity), 1.0f, float(opacityMode)) * 255);
+    updateDisplayedOpacity((regularOpacity + (1.0f - regularOpacity) * opacityMode) * 255);
     if (!updatingEnabled)
     {
         leftPercent->setString("");

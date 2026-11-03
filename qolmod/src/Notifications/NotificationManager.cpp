@@ -57,5 +57,5 @@ void NotificationManager::update(float dt)
     if (getPositionY() < -y)
         setPositionY(-y);
 
-    this->setPositionY(std::lerp<double>(double(getPositionY()), double(-y), double(10 * dt)));
+    this->setPositionY((getPositionY() + ((-y) - getPositionY()) * (10 * dt)));
 }

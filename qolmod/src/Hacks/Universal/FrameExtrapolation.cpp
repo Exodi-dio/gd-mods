@@ -85,7 +85,7 @@ class $modify (ExtrapolatedGameLayer, GJBaseGameLayer)
 
             //log::info("xPos: {}, {}", .x, m_gameState.m_cameraOffset.x);
             
-            m_objectLayer->setPosition(std::lerp<double>(double(self->lastCamPos.x), double(endCamPos.x), double(percent)), std::lerp<double>(double(self->lastCamPos.y), double(endCamPos.y), double(percent)));
+            m_objectLayer->setPosition((self->lastCamPos.x + (endCamPos.x - self->lastCamPos.x) * percent), (self->lastCamPos.y + (endCamPos.y - self->lastCamPos.y) * percent));
 
             extrapolateGround(m_groundLayer, percent);
             extrapolateGround(m_groundLayer2, percent);
@@ -117,8 +117,8 @@ class $modify (ExtrapolatedGameLayer, GJBaseGameLayer)
         float rotateSpeed = (player->m_isBall && player->m_isBallRotating) ? 1.0 : player->m_rotateSpeed;
         float endRot = ((player->m_rotationSpeed * rotateSpeed) / 240.0f);
 
-        player->CCNode::setPosition(ccp(std::lerp<double>(double(player->m_position.x), double(endXPos), double(percent)), std::lerp<double>(double(player->m_position.y), double(endYPos), double(percent))));
-        player->m_mainLayer->setRotation(std::lerp<double>(0.0, double(endRot), double(percent)) + playerGetRotatedHitbox(player));
+        player->CCNode::setPosition(ccp((player->m_position.x + (endXPos - player->m_position.x) * percent), (player->m_position.y + (endYPos - player->m_position.y) * percent)));
+        player->m_mainLayer->setRotation((0.0 + (endRot - 0.0) * percent) + playerGetRotatedHitbox(player));
     }
 
     void extrapolateGround(GJGroundLayer* ground, float percent)
@@ -131,7 +131,7 @@ class $modify (ExtrapolatedGameLayer, GJBaseGameLayer)
         {
             if (typeinfo_cast<CCSpriteBatchNode*>(child))
             {
-                child->setPositionX(std::lerp<double>(0.0, double(moveBy), double(percent)));
+                child->setPositionX((0.0 + (moveBy - 0.0) * percent));
             }
         }
     }
