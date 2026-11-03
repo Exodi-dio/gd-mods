@@ -1,0 +1,70 @@
+name: Build QOLMod
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [Android32, Android64, iOS]
+        include:
+          - target: Android32
+            os: ubuntu-latest
+          - target: Android64
+            os: ubuntu-latest
+          - target: iOS
+            os: macos-latest
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build QOLMod
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          sdk: "nightly"
+          path: qolmod
+          target: ${{ matrix.target }}
+          build-config: Release
+          combine: true
+
+  package:
+    name: Package QOLMod
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Set up geode CLI
+        uses: robinraju/release-downloader@v1.13
+        with:
+          repository: geode-sdk/cli
+          latest: true
+          tarBall: false
+          zipBall: false
+          fileName: "*-linux.zip"
+          extract: true
+          out-file-path: ./cli
+
+      - run: chmod +x ./cli/geode && echo "$PWD/cli" >> $GITHUB_PATH
+
+      - name: Merge platforms into one .geode
+        run: |
+          geode package merge --zstd \
+            artifacts/geode-build-android32/thesillydoggo.qolmod.geode \
+            artifacts/geode-build-android64/thesillydoggo.qolmod.geode \
+            artifacts/geode-build-ios/thesillydoggo.qolmod.geode
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Build Output
+          path: artifacts/geode-build-android32/thesillydoggo.qolmod.geode

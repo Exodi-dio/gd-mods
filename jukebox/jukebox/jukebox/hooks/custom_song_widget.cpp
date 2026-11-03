@@ -1,0 +1,625 @@
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include <Geode/Result.hpp>
+#include <Geode/binding/CCMenuItemSpriteExtra.hpp>
+#include <Geode/binding/CustomSongWidget.hpp>
+#include <Geode/binding/FLAlertLayer.hpp>
+#include <Geode/binding/GJGameLevel.hpp>
+#include <Geode/binding/GameManager.hpp>
+#include <Geode/binding/LevelInfoLayer.hpp>
+#include <Geode/binding/SongInfoObject.hpp>
+#include <Geode/cocos/actions/CCActionInterval.h>
+#include <Geode/cocos/cocoa/CCGeometry.h>
+#include <Geode/cocos/cocoa/CCObject.h>
+#include <Geode/cocos/menu_nodes/CCMenu.h>
+#include <Geode/cocos/sprite_nodes/CCSprite.h>
+#include <Geode/loader/Event.hpp>
+#include <Geode/loader/Log.hpp>
+#include <Geode/loader/Mod.hpp>
+#include <Geode/mapping/CCFileUtils.hpp>
+#include <Geode/modify/CustomSongWidget.hpp>  // IWYU pragma: keep
+#include <Geode/modify/LevelInfoLayer.hpp>    // IWYU pragma: keep
+#include <Geode/ui/Label.hpp>
+#include <Geode/ui/Layout.hpp>
+#include <Geode/ui/SimpleAxisLayout.hpp>
+#include <Geode/utils/async.hpp>
+#include <Geode/utils/cocos.hpp>
+#include <asp/fs/Path.hpp>
+#include <asp/fs/fs.hpp>
+#include <asp/fs/std.hpp>  // IWYU pragma: keep
+#include <fmt/format.h>
+
+#include "jukebox/events/indexes_loaded.hpp"
+#include "jukebox/events/song_state_changed.hpp"
+#include "jukebox/managers/nong_manager.hpp"
+#include "jukebox/nong/nong.hpp"
+#include "jukebox/ui/nong_dropdown_layer.hpp"
+
+using namespace geode::prelude;
+using namespace jukebox;
+
+class $modify(JBSongWidget, CustomSongWidget) {
+    struct Fields {
+        Nongs* nongs = nullptr;
+        CCMenu* labelMenu = nullptr;
+        CCMenu* pinMenu = nullptr;
+        geode::Label* sizeIdLabel = nullptr;
+        std::string songIds;
+        std::string sfxIds;
+        bool firstRun = true;
+        bool searching = false;
+        CCSprite* sprRays = nullptr;
+        std::string lastMultiAssetValue;
+        bool isCalculatingMultiAssetSize = false;
+        bool enqueuedMultiAssetTask = false;
+        CCMenuItemSpriteExtra* btnDisc = nullptr;
+        std::unordered_map<int, Nongs*> assetNongData;
+        std::optional<int> levelID = std::nullopt;
+    };
+
+    std::optional<int> getLevelID() { return m_fields->levelID; }
+
+    void setLevelID(int levelID) {
+        m_fields->levelID = levelID;
+
+        this->setVerifiedUI();
+    }
+
+    // Set the disc to show the song is verified.
+    // The function only works if there is a verified song.
+    void setVerifiedUI() {
+        if (!m_fields->levelID.has_value()) { return; }
+        std::vector<int> songIDs;
+        // m_songs size + SongInfoObject id
+        songIDs.reserve(m_songs.size() + 1);
+        for (auto const& kv : m_songs) { songIDs.push_back(kv.first); }
+
+        int id = m_songInfoObject->m_songID;
+        if (m_isRobtopSong) {
+            id++;
+            id = -id;
+        }
+        songIDs.push_back(id);
+
+        bool isVerified = !NongManager::get().getVerifiedNongsForLevel(m_fields->levelID.value(), songIDs).empty();
+        if (!isVerified) { return; }
+
+        if (m_fields->sprRays) { m_fields->sprRays->setVisible(true); }
+        if (m_fields->btnDisc) {
+            CCSprite* sprDiscGold = CCSprite::createWithSpriteFrameName("JB_PinDiscGold.png"_spr);
+            if (m_isMusicLibrary) {
+                sprDiscGold->setScale(0.5f);
+            } else {
+                sprDiscGold->setScale(0.7f);
+            }
+            m_fields->btnDisc->setSprite(sprDiscGold);
+        }
+    }
+
+    bool init(
+        SongInfoObject* songInfo,
+        CustomSongDelegate* songDelegate,
+        bool showSongSelect,
+        bool showPlayMusic,
+        bool showDownload,
+        bool isRobtopSong,
+        bool unk,
+        bool isMusicLibrary,
+        int unkInt,
+        bool showFavorite,
+        bool showUsage
+    ) {
+        this->adjustSongInfoObject(songInfo);
+        if (!CustomSongWidget::init(
+                songInfo, songDelegate, showSongSelect, showPlayMusic, showDownload, isRobtopSong, unk, isMusicLibrary,
+                unkInt, showFavorite, showUsage
+            )) {
+            return false;
+        }
+
+        this->setupJBSW();
+        m_fields->firstRun = false;
+
+        this->addEventListener("indexes-loaded"_spr, event::IndexesLoaded(), [this] {
+            if (!m_songInfoObject) { return ListenerResult::Propagate; }
+
+            std::optional<Nongs*> nongs = NongManager::get().getNongs(m_songInfoObject->m_songID);
+
+            if (!nongs) { return ListenerResult::Propagate; }
+
+            this->addPopupOpener(nongs.value());
+
+            return ListenerResult::Propagate;
+        });
+
+        this->addEventListener(
+            "CSW-song-state"_spr, event::SongStateChanged(), [this](const event::SongStateChangedData& event) {
+                if (!m_songInfoObject) { return ListenerResult::Propagate; }
+
+                this->maybeChangeDownloadedMark(event.nongs());
+
+                if (event.nongs()->songID() !=
+                    NongManager::get().adjustSongID(m_songInfoObject->m_songID, m_isRobtopSong)) {
+                    return ListenerResult::Propagate;
+                }
+
+                const Song* active = event.nongs()->active();
+
+                m_songInfoObject->m_songName = active->metadata()->name;
+                m_songInfoObject->m_artistName = active->metadata()->artist;
+                this->updateSongInfo();
+                this->fixMultiAssetSize();
+
+                return ListenerResult::Propagate;
+            }
+        );
+
+        return true;
+    }
+
+    void maybeChangeDownloadedMark(const Nongs* nongs) {
+        if (m_songs.empty()) { return; }
+
+        const std::optional<std::filesystem::path> optPath = nongs->active()->path();
+
+        if (const auto found = m_songs.find(nongs->songID()); found != m_songs.end()) {
+            if (!optPath) {
+                found->second = false;
+            } else {
+                found->second = asp::fs::exists(asp::fs::Path::fromStdPath(std::move(optPath).value()));
+            }
+        }
+    }
+
+    void adjustSongInfoObject(SongInfoObject* object) {
+        if (!object || !object->m_unloaded) { return; }
+
+        const std::optional<Nongs*> opt = NongManager::get().getNongs(object->m_songID);
+
+        if (!opt.has_value()) { return; }
+
+        const Nongs* nongs = std::move(opt).value();
+
+        object->m_songName = nongs->active()->metadata()->name;
+        object->m_artistName = nongs->active()->metadata()->artist;
+    }
+
+    void updateWithMultiAssets(std::string p1, std::string p2, int p3) {
+        CustomSongWidget::updateWithMultiAssets(p1, p2, p3);
+        m_fields->songIds = std::string(p1);
+        m_fields->sfxIds = std::string(p2);
+        this->fixMultiAssetSize();
+        if (!m_songInfoObject || m_isRobtopSong) { return; }
+
+        if (!m_fields->nongs) {
+            if (auto res = NongManager::get().getNongs(m_songInfoObject->m_songID)) {
+                m_fields->nongs = std::move(res).value();
+                this->createSongLabels(m_fields->nongs);
+            }
+        } else {
+            this->createSongLabels(m_fields->nongs);
+        }
+    }
+
+    void updateMultiAssetInfo(bool p) {
+        CustomSongWidget::updateMultiAssetInfo(p);
+        this->fixMultiAssetSize();
+    }
+
+    void onFixMultiAssetSizeFinished(std::string value, bool alterEnqueued = true) {
+        m_fields->lastMultiAssetValue = value;
+
+        if (alterEnqueued) {
+            m_fields->isCalculatingMultiAssetSize = false;
+            if (m_fields->enqueuedMultiAssetTask) {
+                m_fields->enqueuedMultiAssetTask = false;
+                this->fixMultiAssetSize();
+            }
+        }
+
+        if (m_songIDLabel == nullptr) { return; }
+
+        int downloaded = 0;
+        int total = 0;
+        for (const auto& kv : m_songs) {
+            total++;
+            if (kv.second) { downloaded++; }
+        }
+        for (const auto& kv : m_sfx) {
+            total++;
+            if (kv.second) { downloaded++; }
+        }
+
+        std::string label;
+
+        if (downloaded != total) {
+            label = fmt::format(
+                "Songs: {}  SFX: {}  Size: {} ({}/{})", m_songs.size(), m_sfx.size(), value, downloaded, total
+            );
+        } else {
+            label = fmt::format("Songs: {}  SFX: {}  Size: {}", m_songs.size(), m_sfx.size(), value);
+        }
+
+        m_songIDLabel->setString(label.c_str());
+    }
+
+    void fixMultiAssetSize() {
+        auto flag = Mod::get()->getSettingValue<bool>("fix-empty-size");
+        if ((m_fields->songIds.empty() && m_fields->sfxIds.empty()) || !flag) { return; }
+
+        if (m_fields->isCalculatingMultiAssetSize) {
+            if (!m_fields->lastMultiAssetValue.empty()) {
+                this->onFixMultiAssetSizeFinished(m_fields->lastMultiAssetValue, false);
+            }
+
+            m_fields->enqueuedMultiAssetTask = true;
+            return;
+        }
+
+        const auto resources = std::filesystem::path(CCFileUtils::get()->getWritablePath2()) / "Resources";
+        const auto song = std::filesystem::path(CCFileUtils::get()->getWritablePath());
+
+        if (m_songIDLabel && !m_fields->lastMultiAssetValue.empty()) {
+            this->onFixMultiAssetSizeFinished(m_fields->lastMultiAssetValue, false);
+        }
+
+        m_fields->isCalculatingMultiAssetSize = true;
+
+        async::spawn(
+            NongManager::get().getMultiAssetSizes(m_fields->songIds, m_fields->sfxIds, resources, song),
+            [node = Ref(this)](std::string result) { node->onFixMultiAssetSizeFinished(std::move(result)); }
+        );
+    }
+
+    void restoreUI() {
+        if (m_fields->pinMenu != nullptr) {
+            m_fields->pinMenu->removeFromParent();
+            m_fields->pinMenu = nullptr;
+        }
+        if (m_fields->labelMenu != nullptr) {
+            m_songLabel->setVisible(true);
+            m_fields->labelMenu->removeFromParent();
+            m_fields->labelMenu = nullptr;
+        }
+
+        this->resetIdAndSizeLabel();
+    }
+
+    void onDelete(CCObject* obj) {
+        if (!m_fields->nongs) {
+            CustomSongWidget::onDelete(obj);
+            return;
+        }
+
+        if (!m_fields->nongs->isDefaultActive()) {
+            FLAlertLayer::create(
+                "Cannot delete",
+                "Cannot delete song while a NONG is set. "
+                "Change to default song first.",
+                "Ok"
+            )
+                ->show();
+        } else {
+            CustomSongWidget::onDelete(obj);
+        }
+    }
+
+    void setupJBSW() {
+        SongInfoObject* obj = m_songInfoObject;
+        if (obj == nullptr) { return; }
+
+        if (m_showSelectSongBtn && obj->m_artistName.empty() && obj->m_songUrl.empty()) {
+            this->restoreUI();
+            return;
+        }
+
+        if (!m_songs.empty()) { this->getMultiAssetSongInfo(); }
+
+        const int id = obj->m_songID;
+        const int adjustedId = NongManager::get().adjustSongID(obj->m_songID, m_isRobtopSong);
+
+        if (adjustedId == 0) {
+            this->restoreUI();
+            return;
+        }
+
+        Nongs* nongs = nullptr;
+
+        if (!NongManager::get().hasSongID(adjustedId)) {
+            Result<Nongs*> res = NongManager::get().initSongID(obj, id, m_isRobtopSong);
+            if (res.isErr()) {
+                std::string err = std::move(res).unwrapErr();
+                log::error("{}", err);
+                FLAlertLayer::create(
+                    "Error",
+                    fmt::format(
+                        "Failed to initialize Jukebox data for this "
+                        "song ID. Please open a help thread on the "
+                        "Discord server if this keeps happening. Error: {}",
+                        err
+                    ),
+                    "Ok"
+                )
+                    ->show();
+                this->restoreUI();
+                return;
+            }
+            nongs = std::move(res).unwrap();
+        } else {
+            nongs = NongManager::get().getNongs(adjustedId).value();
+        }
+
+        m_fields->nongs = nongs;
+        this->createSongLabels(nongs);
+    }
+
+    void updateSongInfo() {
+        log::debug("update song object");
+        log::debug(
+            "songselect {}, playmusic {}, download {}, robtop {}, unk{}, musiclib {}", m_showSelectSongBtn,
+            m_showPlayMusicBtn, m_showDownloadBtn, m_isRobtopSong, m_unkBool2, m_isMusicLibrary
+        );
+
+        if (m_fields->firstRun && m_isRobtopSong && m_songInfoObject) {
+            const int id = NongManager::get().adjustSongID(m_songInfoObject->m_songID, true);
+
+            if (const std::optional<Nongs*> opt = NongManager::get().getNongs(id)) {
+                const Nongs* n = std::move(opt).value();
+
+                m_songInfoObject->m_songName = n->active()->metadata()->name;
+                m_songInfoObject->m_artistName = n->active()->metadata()->artist;
+            }
+        }
+
+        CustomSongWidget::updateSongInfo();
+        if (!m_fields->firstRun) { this->setupJBSW(); }
+    }
+
+    void getMultiAssetSongInfo() {
+        for (auto const& kv : m_songs) {
+            Nongs* nongs = nullptr;
+            if (!NongManager::get().hasSongID(kv.first)) {
+                Result<Nongs*> result = NongManager::get().initSongID(nullptr, kv.first, false);
+
+                if (result.isErr()) {
+                    log::error("Failed to init multi asset song: {}", result.unwrapErr());
+                    continue;
+                }
+
+                nongs = result.unwrap();
+            } else {
+                nongs = NongManager::get().getNongs(kv.first).value();
+            }
+            m_fields->assetNongData[kv.first] = nongs;
+        }
+    }
+
+    void resetIdAndSizeLabel() {
+        if (m_songIDLabel == nullptr || m_songInfoObject == nullptr) { return; }
+
+        if (m_songs.empty() && m_sfx.empty()) {
+            std::string label;
+            if (m_isMusicLibrary) {
+                label = fmt::format("ID: {}  Size: {}MB", m_songInfoObject->m_songID, m_songInfoObject->m_fileSize);
+            } else {
+                label = fmt::format("SongID: {}  Size: {}MB", m_songInfoObject->m_songID, m_songInfoObject->m_fileSize);
+            }
+
+            m_songIDLabel->setString(label.c_str());
+        } else {
+            int downloaded = 0;
+            int total = 0;
+            for (auto [k, v] : m_songs) {
+                total++;
+                if (v) { downloaded++; }
+            }
+            for (auto [k, v] : m_sfx) {
+                total++;
+                if (v) { downloaded++; }
+            }
+
+            std::string label;
+
+            if (downloaded != total) {
+                label = fmt::format(
+                    "Songs: {}  SFX: {}  Size: 0.00MB ({}/{})", m_songs.size(), m_sfx.size(), downloaded, total
+                );
+            } else {
+                label = fmt::format("Songs: {}  SFX: {}  Size: 0.0MB", m_songs.size(), m_sfx.size());
+            }
+
+            m_songIDLabel->setString(label.c_str());
+        }
+    }
+
+    void updateIdAndSizeLabel(Nongs* nongs) {
+        if (!m_songs.empty() || !m_sfx.empty()) { return; }
+
+        Song* active = nongs->active();
+        std::optional<std::filesystem::path> activePathOpt = active->path();
+        int songID = NongManager::get().adjustSongID(nongs->songID(), m_isRobtopSong);
+
+        if (!activePathOpt) { return; }
+
+        const std::filesystem::path activePath = std::move(activePathOpt).value();
+
+        std::string sizeText;
+        if (asp::fs::exists(asp::fs::Path::fromStdPath(activePath))) {
+            sizeText = NongManager::get().getFormattedSize(activePath);
+        } else if (m_songInfoObject) {
+            sizeText = fmt::format("{:.2f}MB", m_songInfoObject->m_fileSize);
+        } else {
+            sizeText = "N/A";
+        }
+
+        std::string labelText;
+        std::string idDisplay;
+        if (nongs->isDefaultActive()) {
+            int displayId = songID < 0 ? -songID - 1 : songID;
+            idDisplay = fmt::format("{}{}", songID < 0 ? "(R) " : "", displayId);
+        } else {
+            idDisplay = songID < 0 ? "(R) NONG" : "NONG";
+        }
+
+        if (m_isMusicLibrary) {
+            labelText = fmt::format("ID: {}  Size: {}", idDisplay, sizeText);
+        } else {
+            labelText = fmt::format("SongID: {}  Size: {}", idDisplay, sizeText);
+        }
+
+        if (m_songIDLabel != nullptr) { m_songIDLabel->setString(labelText.c_str()); }
+    }
+
+    void addPopupOpener(Nongs* nongs) {
+        Song* active = nongs->active();
+
+        if (m_fields->pinMenu != nullptr) {
+            m_fields->pinMenu->removeFromParent();
+            m_fields->pinMenu = nullptr;
+        }
+
+        if (m_fields->labelMenu != nullptr) {
+            m_fields->labelMenu->removeFromParent();
+            m_fields->labelMenu = nullptr;
+        }
+
+        if (Mod::get()->getSettingValue<bool>("old-label-display")) {
+            m_fields->labelMenu = CCMenu::create();
+            m_fields->labelMenu->setID("nong-menu"_spr);
+            m_fields->labelMenu->ignoreAnchorPointForPosition(false);
+            m_fields->labelMenu->setTouchPriority(m_buttonMenu->getTouchPriority());
+            geode::Label* label = geode::Label::create(active->metadata()->name, "bigFont.fnt");
+            label->setID("song-name-label"_spr);
+            CCMenuItemSpriteExtra* btn =
+                CCMenuItemSpriteExtra::create(label, this, menu_selector(JBSongWidget::addNongLayer));
+            btn->setID("nong-button"_spr);
+            m_fields->labelMenu->addChild(btn);
+            m_fields->labelMenu->setAnchorPoint(m_songLabel->getAnchorPoint());
+            m_fields->labelMenu->setContentSize(m_songLabel->getContentSize());
+            m_fields->labelMenu->setScale(m_songLabel->getScale());
+            m_fields->labelMenu->setPosition(m_songLabel->getPosition());
+            m_fields->labelMenu->setLayout(
+                SimpleRowLayout::create()
+                    ->setMainAxisScaling(AxisScaling::Scale)
+                    ->setCrossAxisScaling(AxisScaling::Scale)
+            );
+            m_songLabel->setVisible(false);
+            this->addChild(m_fields->labelMenu);
+        } else {
+            CCSize pos;
+
+            if (!m_isMusicLibrary) {
+                if (m_ncsLogo && m_ncsLogo->isVisible()) {
+                    pos = m_ncsLogo->getPosition();
+                } else {
+                    pos = m_songLabel->getPosition();
+                }
+
+                pos = pos + CCSize {-9.0f, 13.0f};
+            } else {
+                pos = m_songIDLabel->getPosition() + CCSize {-7.0f, -11.0f};
+            }
+
+            m_fields->pinMenu = CCMenu::create();
+            m_fields->pinMenu->setID("nong-menu"_spr);
+            m_fields->pinMenu->setTouchPriority(m_buttonMenu->getTouchPriority());
+
+            CCSprite* sprRays = CCSprite::createWithSpriteFrameName("JB_PinDiscRays.png"_spr);
+            CCSprite* sprDisc = CCSprite::createWithSpriteFrameName("JB_PinDisc.png"_spr);
+            if (m_isMusicLibrary) {
+                sprDisc->setScale(0.5f);
+                sprRays->setScale(0.5f * 1.15f);
+            } else {
+                sprDisc->setScale(0.7f);
+                sprRays->setScale(0.7f * 1.15f);
+            }
+            sprDisc->setID("nong-pin"_spr);
+
+            CCMenuItemSpriteExtra* btnDisc =
+                CCMenuItemSpriteExtra::create(sprDisc, this, menu_selector(JBSongWidget::addNongLayer));
+            btnDisc->setID("nong-button"_spr);
+
+            sprRays->setID("nong-pin-rays"_spr);
+            sprRays->setZOrder(-1);
+            sprRays->setAnchorPoint({0.5f, 0.5f});
+            sprRays->setVisible(false);
+
+            m_fields->sprRays = sprRays;
+            m_fields->btnDisc = btnDisc;
+
+            m_fields->pinMenu->addChildAtPosition(sprRays, Anchor::Center);
+
+            static constexpr float rotationDuration = 80.0f;
+            CCRepeatForever* rotateAction = CCRepeatForever::create(CCRotateBy::create(rotationDuration, 360));
+            sprRays->runAction(rotateAction);
+
+            m_fields->pinMenu->setAnchorPoint({0.5f, 0.5f});
+            m_fields->pinMenu->ignoreAnchorPointForPosition(false);
+            m_fields->pinMenu->addChildAtPosition(btnDisc, Anchor::Center);
+            m_fields->pinMenu->setContentSize(btnDisc->getScaledContentSize());
+            m_fields->pinMenu->setLayout(AnchorLayout::create());
+
+            m_fields->pinMenu->setPosition(pos);
+            this->addChild(m_fields->pinMenu);
+
+            this->setVerifiedUI();
+        }
+    }
+
+    void createSongLabels(Nongs* nongs) {
+        this->addPopupOpener(nongs);
+        this->updateIdAndSizeLabel(nongs);
+    }
+
+    void addNongLayer(CCObject*) {
+        if (!m_songs.empty()) { this->getMultiAssetSongInfo(); }
+        std::vector<int> ids;
+        int id = m_songInfoObject->m_songID;
+        if (m_isRobtopSong) {
+            id++;
+            id = -id;
+        }
+        if (m_songs.size() > 1) {
+            for (auto const& kv : m_songs) {
+                if (!NongManager::get().getNongs(kv.first).has_value()) { return; }
+                ids.push_back(kv.first);
+            }
+        } else {
+            ids.push_back(id);
+        }
+
+        auto* const layer = NongDropdownLayer::create(ids, this, id, this->getLevelID());
+        if (!layer) { return; }
+
+        // Make sure the popup sits above any possible popups
+        layer->setZOrder(106);
+        layer->show();
+    }
+};
+
+class $modify(JBLevelInfoLayer, LevelInfoLayer) {
+    bool init(GJGameLevel* level, bool p1) {
+        if (!LevelInfoLayer::init(level, p1)) { return false; }
+        if (Mod::get()->getSavedValue("show-tutorial", true) && GameManager::get()->m_levelEditorLayer == nullptr) {
+            auto* const popup = FLAlertLayer::create(
+                "Jukebox",
+                "Thank you for using <co>Jukebox</c>! To "
+                "begin swapping songs, click "
+                "on the <cr>disc icon above the song name</c>!",
+                "Ok"
+            );
+            if (popup) {
+                Mod::get()->setSavedValue("show-tutorial", false);
+                popup->m_scene = this;
+                popup->show();
+            }
+        }
+        static_cast<JBSongWidget*>(this->m_songWidget)->setLevelID(m_level->m_levelID.value());
+        return true;
+    }
+};

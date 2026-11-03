@@ -1,0 +1,33 @@
+#include <optional>
+#include <string>
+
+#include <Geode/binding/GJGameLevel.hpp>
+#include <Geode/modify/GJGameLevel.hpp>  // IWYU pragma: keep
+#include <Geode/modify/Modify.hpp>
+#include <asp/fs/Path.hpp>
+#include <asp/fs/fs.hpp>
+#include <asp/fs/std.hpp>  // IWYU pragma: keep
+
+#include "jukebox/managers/nong_manager.hpp"
+#include "jukebox/nong/nong.hpp"
+
+using namespace geode::prelude;
+using namespace jukebox;
+
+class $modify(GJGameLevel) {
+    std::string getAudioFileName() {
+        NongManager::get().m_currentlyPreparingNong = std::nullopt;
+        // If we have a custom song, return
+        if (m_songID != 0) { return GJGameLevel::getAudioFileName(); }
+        int id = (-m_audioTrack) - 1;
+        std::optional<Nongs*> res = NongManager::get().getNongs(id);
+        if (!res.has_value()) { return GJGameLevel::getAudioFileName(); }
+        Song* active = res.value()->active();
+        if (!asp::fs::exists(asp::fs::Path::fromStdPath(active->path().value()))) {
+            return GJGameLevel::getAudioFileName();
+        }
+        jukebox::NongManager::get().m_currentlyPreparingNong = res;
+
+        return asp::fs::Path::fromStdPath(active->path().value()).string();
+    }
+};

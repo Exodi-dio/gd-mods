@@ -1,0 +1,242 @@
+#include "OptionsUI.hpp"
+#include "Categories/FavouritesNode.hpp"
+#include "../Utils/AdvancedLabel/AdvLabelBMFont.hpp"
+#include "BetterButtonSprite.hpp"
+#include "../Localisation/LocalisationManager.hpp"
+#include "BetterAlertLayer.hpp"
+#include <ModuleInfoAlert.hpp>
+#include <SetupShortcutUI.hpp>
+#include <EditKeyConfigUI.hpp>
+#include <Button.hpp>
+#include <PulsingCircle.hpp>
+#include <SetupRangeUI.hpp>
+
+using namespace qolmod;
+
+OptionsUI* OptionsUI::create(Module* mod)
+{
+    auto pRet = new OptionsUI();
+
+    pRet->module = mod;
+    auto size = pRet->calculateSize();
+
+    if (pRet && pRet->initAnchored(size.width, size.height))
+    {
+        pRet->autorelease();
+        return pRet;
+    }
+
+    CC_SAFE_DELETE(pRet);
+    return nullptr;
+}
+
+CCSize OptionsUI::calculateSize()
+{
+    // 340 is the width of a category node
+    return ccp(340 + 20, 250);
+}
+
+bool OptionsUI::setup()
+{
+    if (!instance)
+        instance = this;
+    else
+        m_noElasticity = true;
+
+    m_bgSprite->setVisible(false);
+    bg = BackgroundSprite::create();
+    bg->setContentSize(this->m_size);
+    bg->setPosition(this->m_size / 2);
+    this->setUserData(module);
+
+    m_buttonMenu->setVisible(false);
+    m_mainLayer->addChild(bg);
+
+    auto title = AdvLabelBMFont::createWithString(module->getName(), "goldFont.fnt");
+    title->setScale(0.7f);
+
+    auto menu = CCMenu::create();
+    auto menu2 = CCMenu::create();
+    auto menu3 = CCMenu::create();
+
+    auto spr = BetterButtonSprite::createWithLocalisation(ccp(54.25f, 30), "ui/ok-button", "goldFont.fnt", "GJ_button_01.png");
+    auto btn = qolmod::Button::create(spr, this, menu_selector(OptionsUI::onClose));
+    menu->addChild(btn);
+
+    auto infoBtn = qolmod::Button::create(CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png"), this, menu_selector(OptionsUI::onInfo));
+    infoBtn->getNormalImage()->setScale(0.75f);
+    menu2->addChild(infoBtn);
+
+    favBtn = CCMenuItemToggler::create(CCSprite::createWithSpriteFrameName("favourites.png"_spr), CCSprite::createWithSpriteFrameName("favourites.png"_spr), this, menu_selector(OptionsUI::onToggleFavourite));
+    favBtn->toggle(module->isFavourited());
+
+    favBtn->setContentSize(btn->getContentSize() * 1.3f);
+
+    favBtn->m_offButton->setContentSize(favBtn->getContentSize());
+    favBtn->m_offButton->setPosition(favBtn->getContentSize() / 2);
+    favBtn->m_offButton->getNormalImage()->setPosition(favBtn->getContentSize() / 2);
+    
+    favBtn->m_onButton->setContentSize(favBtn->getContentSize());
+    favBtn->m_onButton->setPosition(favBtn->getContentSize() / 2);
+    favBtn->m_onButton->getNormalImage()->setPosition(favBtn->getContentSize() / 2);
+
+    favBtn->m_offButton->setColor(ccc3(150, 150, 150));
+    favBtn->m_offButton->setOpacity(150);
+
+    auto btnKeybind = qolmod::Button::create(CCSprite::createWithSpriteFrameName("keybinds.png"_spr), this, menu_selector(OptionsUI::onChangeKeybind));
+    btnKeybind->setContentSize(btnKeybind->getContentSize() * ccp(1, 2));
+    btnKeybind->getNormalImage()->setPosition(btnKeybind->getContentSize() / 2);
+    btnKeybind->setPosition(ccp(m_size.width - 18 * 2, -m_size.height + 18 * 2));
+
+    auto btnRanges = qolmod::Button::create(CCSprite::createWithSpriteFrameName("ranges.png"_spr), this, menu_selector(OptionsUI::onChangeRanges));
+    btnRanges->setContentSize(btnRanges->getContentSize() * ccp(1, 2));
+    btnRanges->setPositionX(btnKeybind->getPositionX() - 25);
+    btnRanges->setPositionY(btnKeybind->getPositionY());
+    btnRanges->getNormalImage()->setPosition(btnRanges->getContentSize() / 2);
+
+    auto btnShortcut = CCMenuItemToggler::create(CCSprite::createWithSpriteFrameName("shortcuts.png"_spr), CCSprite::createWithSpriteFrameName("shortcuts.png"_spr), this, menu_selector(OptionsUI::onChangeShortcut));
+    btnShortcut->setUserData(module);
+    btnShortcut->setPosition(ccp(2, -m_size.height + 18 * 2));    
+
+    menu3->addChild(favBtn);
+    menu3->addChild(btnKeybind);
+    menu3->addChild(btnShortcut);
+    menu3->addChild(btnRanges);
+
+    node = CategoryNode::create();
+    node->setAnchorPoint(ccp(0.5f, 0.5f));
+    node->setContentHeight(170);
+    node->updateLayout();
+    node->setID(fmt::format("{}_options", module->getID()));
+
+    Module::sortAlphabetically(&module->getOptions());
+
+    for (auto option : module->getOptions())
+    {
+        node->addModule(option);
+    }
+
+    if (module->showSeperateOptionsInfo)
+    {
+        auto menu = CCMenu::create();
+        menu->setZOrder(80085);
+
+        auto infoBtn2 = qolmod::Button::create(CCSpriteGrayscale::createWithSpriteFrameName("GJ_infoIcon_001.png"), this, menu_selector(OptionsUI::onSeperateOptionsInfo));
+        infoBtn2->getNormalImage()->setScale(0.75f);
+
+        menu->addChild(infoBtn2, 67);
+
+        if (!Mod::get()->getSavedValue<bool>("has-shown-seperate-info"))
+        {
+            pulsingCircle = []{
+                auto circle = PulsingCircle::create(2.5f, 15, 0.8f, false, true);
+                circle->color = ccWHITE;
+                return circle;
+            }();
+            menu->addChild(pulsingCircle);
+        }
+
+        m_mainLayer->addChildAtPosition(menu, Anchor::TopRight, ccp(-39, -18));
+    }
+
+    m_mainLayer->addChildAtPosition(node, Anchor::Center, ccp(0, 5));
+    m_mainLayer->addChildAtPosition(title, Anchor::Top, ccp(0, -18));
+    m_mainLayer->addChildAtPosition(menu, Anchor::Bottom, ccp(0, 24.5f));
+    m_mainLayer->addChildAtPosition(menu2, Anchor::TopRight, ccp(-16, -18));
+    m_mainLayer->addChildAtPosition(menu3, Anchor::TopLeft, ccp(16, -18));
+
+    return true;
+}
+
+void OptionsUI::onInfo(CCObject* sender)
+{
+    ModuleInfoAlert::create(module)->show();
+}
+
+void OptionsUI::onSeperateOptionsInfo(CCObject* sender)
+{
+    Mod::get()->setSavedValue<bool>("has-shown-seperate-info", true);
+
+    if (pulsingCircle)
+    {
+        pulsingCircle->removeFromParentAndCleanup(true);
+        pulsingCircle = nullptr;
+    }
+
+    BetterAlertLayer::createWithLocalisation("options-ui/seperate-alert/title", "options-ui/seperate-alert/text", "ui/ok-button")->show();
+}
+
+void OptionsUI::onToggleFavourite(CCObject* sender)
+{
+    module->setFavourited(!module->isFavourited());
+    
+    if (FavouritesNode::get())
+        FavouritesNode::get()->refresh();
+}
+
+#include "../FloatingShortcuts/ShortcutManager.hpp"
+
+void OptionsUI::onChangeShortcut(CCObject* sender)
+{
+    file::FilePickOptions options;
+    options.defaultPath = Mod::get()->getConfigDir();
+
+    file::FilePickOptions::Filter filter;
+    filter.description = "Image File";
+    filter.files = { "*.png" };
+    options.filters.push_back(filter);
+
+    async::spawn(file::pick(file::PickMode::OpenFile, options), [this](Result<std::optional<asp::fs::PathView>> result)
+    {
+        log::info("1");
+
+        if (result.isOk())
+        {
+            log::info("2");
+
+            if (result.unwrap().has_value())
+            {
+                log::info("3");
+                asp::fs::PathView filePath = result.unwrap().value();
+                log::info("4: {}", filePath);
+
+                ShortcutManager::get()->getConfig(module)->setCustomOverlay(filePath);
+                ShortcutManager::get()->updateConfig(module);
+            }
+        }
+    });
+
+    return;
+
+    auto ui = SetupShortcutUI::create([this](bool enabled, ModuleShortcutConfig conf)
+    {
+        // module->setShortcutConfig(enabled, conf);
+    });
+
+    ui->modID = module->getID();
+    // ui->setStartConfig(module->isShortcutEnabled(), module->getShortcutConfig());
+    ui->show();
+}
+
+void OptionsUI::onChangeKeybind(CCObject* sender)
+{
+    auto ui = EditKeyConfigUI::create([this](KeyConfigStruct config)
+    {
+        module->setKeybind(config);
+    });
+
+    ui->setDefaultConfig({ {}, Keycode::KEY_Unknown });
+    ui->setStartConfig(module->getKeybind());
+    ui->show();
+}
+
+void OptionsUI::onChangeRanges(CCObject* sender)
+{
+    SetupRangeUI::create(module)->show();
+}
+
+OptionsUI::~OptionsUI()
+{
+    if (instance == this)
+        instance = nullptr;
+}

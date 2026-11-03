@@ -1,0 +1,16 @@
+# Geode build output
+build/
+cpm-cache/
+geode-sdk-clone/
+output/
+*.geode
+*.pdb
+*.dbg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store

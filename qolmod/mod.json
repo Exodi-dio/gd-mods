@@ -1,0 +1,65 @@
+{
+	"geode": "5.11.1",
+	"version": "v3.0.0",
+	"gd": {
+		"win": "2.2091",
+		"android": "2.2091",
+		"mac": "2.2091",
+		"ios": "2.2091"
+	},
+	"early-load": true,
+	"id": "thesillydoggo.qolmod",
+	"name": "QOLMod",
+	"developer": "TheSillyDoggo",
+	"description": "The Best Free Geode Mod Menu!",
+	"links": {
+		"source": "https://github.com/TheSillyDoggo/GeodeMenu",
+		"community": "https://discord.gg/8CFcZNh4CW"
+	},
+	"resources": {
+        "files": [
+            "resources/fonts/kosugimaru/*.fnt",
+			"resources/fonts/kosugimaru/*.png",
+			"resources/fonts/lexend/*.fnt",
+			"resources/fonts/lexend/*.png",
+			"resources/fonts/notosans/*.fnt",
+			"resources/fonts/notosans/*.png",
+			"resources/translations/*.json",
+			"resources/translations/langs/*.json",
+			"resources/files/*.md"
+        ],
+		"sprites": [
+			"resources/sprites/slider/*.png",
+			"resources/sprites/icons/anchors/*.png",
+			"resources/sprites/icons/paint/*.png",
+			"resources/sprites/free/*.png"
+		],
+		"spritesheets": {
+			"qolmod-ui-sheet": [
+				"resources/sprites/buttons/*.png",
+				"resources/sprites/icons/animations/*.png",
+				"resources/sprites/icons/categories/*.png",
+				"resources/sprites/icons/shortcuts/*.png",
+				"resources/sprites/*.png"
+			],
+            "qolmod-shortcut-sheet": [
+                "resources/sprites/shortcuts/out/*.png"
+            ]
+		}
+    },
+	"settings": {
+		"open-menu-keybind": {
+			"type": "keybind",
+			"name": "Open Menu Bind",
+			"default": "Tab",
+			"priority": 8008135
+		}
+	},
+	"tags": [
+		"cheat",
+		"gameplay",
+		"utility",
+		"customization",
+		"universal"
+	]
+}

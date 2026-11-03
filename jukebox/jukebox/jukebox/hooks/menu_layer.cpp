@@ -1,0 +1,35 @@
+#include <filesystem>
+#include <string>
+
+#include <Geode/binding/FLAlertLayer.hpp>
+#include <Geode/binding/MenuLayer.hpp>
+#include <Geode/loader/Mod.hpp>
+#include <Geode/modify/MenuLayer.hpp>  // IWYU pragma: keep
+#include <Geode/modify/Modify.hpp>
+#include <asp/fs/std.hpp>  // IWYU pragma: keep
+#include <fmt/core.h>
+#include <fmt/format.h>
+
+using namespace geode::prelude;
+
+class $modify(JBMenuLayer, MenuLayer) {
+    bool init() override {
+        if (!MenuLayer::init()) { return false; }
+
+        if (Mod::get()->getSavedValue<bool>("failed-load", false)) {
+            Mod::get()->setSavedValue("failed-load", false);
+            std::string content = fmt::format(
+                "Jukebox <cr>couldn't load nong_data.json</c>. This means that "
+                "none of your saved songs have been loaded. Please check "
+                "<cb>{}</c> for any created backups and report this to me on "
+                "my Discord (fleeym)",
+                std::filesystem::path(Mod::get()->getSaveDir().native()) / "backups"
+            );
+            FLAlertLayer* popup = FLAlertLayer::create("Jukebox", content, "Ok");
+            popup->m_scene = this;
+            popup->show();
+        }
+
+        return true;
+    }
+};
