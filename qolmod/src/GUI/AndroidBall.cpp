@@ -166,8 +166,8 @@ void AndroidBall::update(float dt)
         float t = 10 * Speedhack::get()->getRealDeltaTime();
 
         this->setPosition(ccp(
-            std::lerp<double>(getPositionX(), position.x, t),
-            std::lerp<double>(getPositionY(), position.y, t)
+            std::lerp<double>(double(getPositionX()), double(position.x), double(t)),
+            std::lerp<double>(double(getPositionY()), double(position.y), double(t))
         ));
     }
     else

@@ -74,8 +74,8 @@ void GestureNode::update(float dt)
     float t = 10 * Speedhack::get()->getRealDeltaTime();
 
     displayedPosition = ccp(
-        std::lerp<double>(displayedPosition.x, realPosition.x, t),
-        std::lerp<double>(displayedPosition.y, realPosition.y, t)
+        std::lerp<double>(double(displayedPosition.x), double(realPosition.x), double(t)),
+        std::lerp<double>(double(displayedPosition.y), double(realPosition.y), double(t))
     );
 }
 

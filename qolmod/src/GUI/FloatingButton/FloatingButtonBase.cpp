@@ -47,11 +47,11 @@ void FloatingButtonBase::update(float dt)
     float t = 10 * dt;
 
     this->CCNode::setPosition(ccp(
-        std::lerp<double>(getPositionX(), position.x, t),
-        std::lerp<double>(getPositionY(), position.y, t)
+        std::lerp<double>(double(getPositionX()), double(position.x), double(t)),
+        std::lerp<double>(double(getPositionY()), double(position.y), double(t))
     ));
 
-    _opacity = std::lerp<double>(_opacity, isSelected ? 1.0f : opacity, t);
+    _opacity = std::lerp<double>(double(_opacity), double(isSelected ? 1.0f : opacity), double(t));
     updateVisuals(_opacity);
 }
 
