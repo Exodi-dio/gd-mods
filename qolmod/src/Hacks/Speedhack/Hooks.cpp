@@ -24,7 +24,8 @@ void SpeedhackScheduler::update(float dt)
 
     if (lastPitch != pi)
     {
-        Speedhack::get()->getMasterChannel()->setPitch(pi);
+        if (auto* master = Speedhack::get()->getMasterChannel())
+            master->setPitch(pi);
 
         lastPitch = pi;
     }

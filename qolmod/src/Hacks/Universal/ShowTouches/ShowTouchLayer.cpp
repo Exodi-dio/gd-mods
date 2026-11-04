@@ -8,12 +8,10 @@ using namespace qolmod;
 
 ShowTouchLayer* ShowTouchLayer::get()
 {
-    static ShowTouchLayer* instance = []
-    {
-        auto pRet = new ShowTouchLayer();
-        pRet->onEnter();
-        return pRet;
-    }();
+    static ShowTouchLayer* instance = nullptr;
+
+    if (!instance)
+        instance = new ShowTouchLayer();
 
     return instance;
 }
