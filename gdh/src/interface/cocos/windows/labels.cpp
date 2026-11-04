@@ -30,7 +30,7 @@ protected:
 
         auto closeBtn = CCSprite::create("GDH_closeBtn.png"_spr);
         closeBtn->setScale(0.75f);
-        m_closeBtn->setNormalImage(closeBtn);
+        m_closeBtn->setDisplayNode(closeBtn);
 
         std::vector<std::pair<std::string, std::string>> templates = {
             {"Attempts", "Attempt {attempt}"},
@@ -140,7 +140,7 @@ protected:
 
         auto closeBtn = CCSprite::create("GDH_closeBtn.png"_spr);
         closeBtn->setScale(0.75f);
-        m_closeBtn->setNormalImage(closeBtn);
+        m_closeBtn->setDisplayNode(closeBtn);
 
         m_corner = corner;
         m_index = index;

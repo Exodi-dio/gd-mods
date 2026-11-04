@@ -1,4 +1,5 @@
 #include <Geode/Geode.hpp>
+#include <vector>
 #include <Geode/modify/CameraTriggerGameObject.hpp>
 #include "../../core/gui.hpp"
 
@@ -12,5 +13,5 @@ class $modify(NoCameraMoveCameraTriggerGameObject, CameraTriggerGameObject) {
         hack.addHookPtr(self.getHook("CameraTriggerGameObject::triggerObject").unwrap());
     }
 
-    void triggerObject(GJBaseGameLayer *p0, int p1, const vector<int> *p2) {}
+    void triggerObject(GJBaseGameLayer *p0, int p1, const std::vector<int> *p2) {}
 };

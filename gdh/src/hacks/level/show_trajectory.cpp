@@ -1,4 +1,5 @@
 #include <Geode/Geode.hpp>
+#include <vector>
 #include <Geode/binding/PlayerObject.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
@@ -254,7 +255,7 @@ class $modify(ShowTrajectoryBaseGameLayer, GJBaseGameLayer) {
         return GJBaseGameLayer::canBeActivatedByPlayer(player, object);
     }
 
-    void collisionCheckObjects(PlayerObject* player, vector<GameObject*>* objects, int objectCount, float dt) {
+    void collisionCheckObjects(PlayerObject* player, std::vector<GameObject*>* objects, int objectCount, float dt) {
         if (!TrajectoryManager::is_simulating) {
             GJBaseGameLayer::collisionCheckObjects(player, objects, objectCount, dt);
             return;
@@ -266,7 +267,7 @@ class $modify(ShowTrajectoryBaseGameLayer, GJBaseGameLayer) {
 
         if (!player || !objects || objectCount <= 0) return;
 
-        auto addCollisionObject = [](GameObject* obj, vector<GameObject*>& vec, int& count, int& index) {
+        auto addCollisionObject = [](GameObject* obj, std::vector<GameObject*>& vec, int& count, int& index) {
             if (count < index) {
                 vec.at(count) = obj;
             } else {
@@ -394,7 +395,7 @@ class $modify(ShowTrajectoryEffectGameObject, EffectGameObject) {
         hack.addHookPtr(self.getHook("EffectGameObject::triggerObject").unwrap());
     }
 
-    void triggerObject(GJBaseGameLayer* layer, int uniqueID, const vector<int>* remapKeys) {
+    void triggerObject(GJBaseGameLayer* layer, int uniqueID, const std::vector<int>* remapKeys) {
         if (TrajectoryManager::is_simulating) return;
         EffectGameObject::triggerObject(layer, uniqueID, remapKeys);
     }

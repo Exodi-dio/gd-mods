@@ -61,7 +61,7 @@ protected:
 
         auto closeBtn = CCSprite::create("GDH_closeBtn.png"_spr);
         closeBtn->setScale(0.75f);
-        m_closeBtn->setNormalImage(closeBtn);
+        m_closeBtn->setDisplayNode(closeBtn);
 
         auto createLabel = [&menu](const std::string& text, const cocos2d::CCPoint& position, float scale = 0.6f) {
             auto label = geode::Label::create(text, "GoogleSans.fnt"_spr);
@@ -112,7 +112,7 @@ protected:
                                 if (!res) return;
                                 auto pathOpt = std::move(res).unwrapOr(std::nullopt);
                                 if (!pathOpt) return;
-                                tryStartRecorder(std::move(*pathOpt));
+                                tryStartRecorder(std::filesystem::path(std::move(*pathOpt).string()));
                             }
                         );
                     } else {
@@ -265,7 +265,7 @@ protected:
 
         auto closeBtn = CCSprite::create("GDH_closeBtn.png"_spr);
         closeBtn->setScale(0.75f);
-        m_closeBtn->setNormalImage(closeBtn);
+        m_closeBtn->setDisplayNode(closeBtn);
 
         auto scroll = ScrollLayer::create({600.f, 180.f});
         scroll->setPosition({winSize.width / 2 - 300.f, 10.f});
@@ -337,7 +337,7 @@ protected:
 
         auto closeBtn = CCSprite::create("GDH_closeBtn.png"_spr);
         closeBtn->setScale(0.75f);
-        m_closeBtn->setNormalImage(closeBtn);
+        m_closeBtn->setDisplayNode(closeBtn);
 
         m_contentLayer = cocos2d::CCNode::create();
         m_contentLayer->setContentSize(m_mainLayer->getContentSize());

@@ -1,4 +1,5 @@
 #include <Geode/Geode.hpp>
+#include <vector>
 #include <Geode/modify/GJBaseGameLayer.hpp>
 #include "../../core/gui.hpp"
 
@@ -12,7 +13,7 @@ class $modify(CoinsInPracticeGJBaseGameLayer, GJBaseGameLayer) {
         hack.addHookPtr(self.getHook("GJBaseGameLayer::collisionCheckObjects").unwrap());
     }
 
-    void collisionCheckObjects(PlayerObject* player, vector<GameObject*>* sectionObjects, int objectCount, float dt) {
+    void collisionCheckObjects(PlayerObject* player, std::vector<GameObject*>* sectionObjects, int objectCount, float dt) {
         if (!m_isPracticeMode)
             return GJBaseGameLayer::collisionCheckObjects(player, sectionObjects, objectCount, dt);
         
