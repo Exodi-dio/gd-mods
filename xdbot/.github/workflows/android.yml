@@ -1,0 +1,111 @@
+name: Build Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - name: Android64
+          os: ubuntu-latest
+          target: Android64
+        - name: Android32
+          os: ubuntu-latest
+          target: Android32
+
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Drop PlayerObject members missing in new bindings
+        run: |
+          git clone --depth 1 https://github.com/TheSillyDoggo/bindings bindings-peek
+          BRO=bindings-peek/bindings/2.2091/GeometryDash.bro
+          for m in $(grep -oE 'player->m_[A-Za-z0-9_]+' src/practice_fixes/player.cpp | sed 's/player->//' | sort -u); do
+            if ! grep -qE "\b$m\b" "$BRO"; then
+              echo "REMOVED: $m"
+              sed -i -E "/player->$m\b/d" src/practice_fixes/player.cpp
+            fi
+          done
+          rm -rf bindings-peek
+
+      - name: Port Geode API
+        run: |
+          find src -type f \( -name '*.hpp' -o -name '*.cpp' \) -print0 | xargs -0 sed -i -E \
+            -e 's/geode::Popup<>\*/geode::Popup*/g' \
+            -e 's/geode::Popup<>/PopupCompat<>/g' \
+            -e 's/geode::Popup</PopupCompat</g' \
+            -e 's/\bPopup<>\*/Popup*/g' \
+            -e 's/\bPopup<>/PopupCompat<>/g' \
+            -e 's/->m_placeholderLabel/->getTextLabel()/g' \
+            -e 's/setSettingValue<std::filesystem::path>/setSettingValue<asp::fs::Path>/g' \
+            -e 's/openFolder\(Mod::get\(\)->getSettingValue<std::filesystem::path>/openFolder(Mod::get()->getSettingValue<asp::fs::Path>/g' \
+            -e 's/file::openFolder\(path\)/file::openFolder(path.string())/g' \
+            -e 's/getSettingValue<std::filesystem::path>\(([^()]*)\)/getSettingValue<asp::fs::Path>(\1).toStdPath().unwrapOrDefault()/g' \
+            -e 's/std::filesystem::path ([A-Za-z_0-9]+) = ([^;]*(getSaveDir|getConfigDir|getGameDir|getResourcesDir)\(\)[^;]*);/std::filesystem::path \1 = (\2).toStdPath().unwrapOrDefault();/g' \
+            -e 's/, public TextInputDelegate//g' \
+            -e 's/\bgd::(vector|string|map|set|unordered_map|unordered_set|list)\b/std::\1/g' \
+            -e 's/bool dispatchKeyboardMSG\(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat\)/bool dispatchKeyboardMSG(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat, double timestamp)/g' \
+            -e 's/CCKeyboardDispatcher::dispatchKeyboardMSG\(key, isKeyDown, isKeyRepeat\)/CCKeyboardDispatcher::dispatchKeyboardMSG(key, isKeyDown, isKeyRepeat, timestamp)/g' \
+            -e 's/dispatchKeyboardMSG\(enumKeyCodes::KEY_Space, (false|true), (false|true)\)/dispatchKeyboardMSG(enumKeyCodes::KEY_Space, \1, \2, 0.0)/g' \
+            -e 's/createDirectoryAll\(([A-Za-z_0-9]+)\)/createDirectoryAll(\1.string())/g' \
+            -e 's/std::ofstream f\(widePath, std::ios::binary\);/std::ofstream f(path, std::ios::binary);/g' \
+            -e 's/std::ofstream f2\(Utils::widen\(pathString\), std::ios::binary\);/std::ofstream f2(pathString, std::ios::binary);/g' \
+            -e 's/std::ifstream file\(Utils::widen\(path\.string\(\)\)\);/std::ifstream file(path.string());/g' \
+            -e 's/listenForSettingChanges\("frame_offset"/listenForSettingChanges<int64_t>("frame_offset"/g' \
+            -e 's/listenForSettingChanges\("background_color"/listenForSettingChanges<cocos2d::ccColor3B>("background_color"/g' \
+            -e 's/bool init\(GJGameLevel ?\* ?level, bool b1, bool b2\)/bool init(GJGameLevel* level, bool b1)/g' \
+            -e 's/PlayLayer::init\(level, b1, b2\)/PlayLayer::init(level, b1)/g' \
+            -e 's/void processCommands\(float dt\)/void processCommands(float dt, bool isHalfTick, bool isLastTick)/g' \
+            -e 's/GJBaseGameLayer::processCommands\(dt\)/GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick)/g' \
+            -e 's/CCARRAY_FOREACH\(([A-Za-z_0-9]+), ([A-Za-z_0-9]+)\) \{/for (auto \2_it : CCArrayExt<CCObject*>(\1)) { \2 = static_cast<decltype(\2)>(\2_it);/g'
+
+          sed -i -E 's/static void setBackgroundColor\(cocos2d::extension::CCScale9Sprite\* bg\);/static void setBackgroundColor(cocos2d::extension::CCScale9Sprite* bg);\n    static void setBackgroundColor(geode::NineSlice* bg);/' src/utils/utils.hpp
+
+          sed -i '0,/#include/s//#include <Geode\/ui\/NineSlice.hpp>\n#include/' src/utils/utils.hpp
+
+          cat >> src/utils/utils.cpp <<'EOF'
+
+          void Utils::setBackgroundColor(geode::NineSlice* bg) {
+              cocos2d::ccColor3B color = Mod::get()->getSettingValue<cocos2d::ccColor3B>("background_color");
+
+              if (color == ccc3(51, 68, 153))
+                  color = ccc3(255, 255, 255);
+
+              bg->setColor(color);
+          }
+          EOF
+
+      - name: Build the mod
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          bindings: 'TheSillyDoggo/bindings'
+          build-config: 'Release'
+          combine: true
+          sdk: 'v6.0.0-alpha.1'
+          target: ${{ matrix.config.target }}
+
+  package:
+    name: Package builds
+    runs-on: ubuntu-latest
+    needs: ['build']
+
+    steps:
+      - uses: geode-sdk/build-geode-mod/combine@main
+        id: build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Build Output
+          path: ${{ steps.build.outputs.build-output }}
