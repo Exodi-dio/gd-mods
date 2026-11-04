@@ -478,7 +478,7 @@ void LoadMacroLayer::addList(bool refresh, float prevScroll) {
 	cocos2d::ccColor3B color1 = ccc3(std::max(0, color.r - 70), std::max(0, color.g - 70), std::max(0, color.b - 70));
 	cocos2d::ccColor3B color2 = ccc3(std::max(0, color.r - 55), std::max(0, color.g - 55), std::max(0, color.b - 55));
 
-	CCARRAY_FOREACH(children, child) {
+	for (auto child_it : CCArrayExt<CCObject*>(children)) { child = static_cast<CCObject*>(child_it);
 		if (GenericListCell* cell = typeinfo_cast<GenericListCell*>(child)) {
 			allMacros.push_back(static_cast<MacroCell*>(cell->getChildren()->objectAtIndex(2)));
 
