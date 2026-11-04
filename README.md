@@ -10,6 +10,7 @@ Every release is organized per mod. Download the `.geode` for the mod you want a
 |-----|--------|-------------|--------|
 | Jukebox | `fleym.nongd` | `jukebox-v1.0-android` | ✅ Built |
 | QOLMod | `thesillydoggo.qolmod` | `qolmod-v1.0-android` | ✅ Built |
+| GDH | `tobyadd.gdh` | `gdh-v1.0-android` | ✅ Built |
 | Level Thumbnails | `cdc.level_thumbnails` | — | ❌ Blocked (Argon dep) |
 
 Each release contains a single combined `.geode` that works on both Android32 and Android64.
@@ -18,6 +19,7 @@ Each release contains a single combined `.geode` that works on both Android32 an
 
 - **Jukebox:** https://github.com/Exodi-dio/gd-mods/releases/tag/jukebox-v1.0-android
 - **QOLMod:** https://github.com/Exodi-dio/gd-mods/releases/tag/qolmod-v1.0-android
+- **GDH:** https://github.com/Exodi-dio/gd-mods/releases/tag/gdh-v1.0-android
 
 ## How mods are built
 
