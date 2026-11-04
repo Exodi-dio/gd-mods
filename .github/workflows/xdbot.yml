@@ -59,7 +59,7 @@ jobs:
 
       - name: Merge platforms into one .geode
         run: |
-          geode package merge --zstd \
+          geode package merge \
             artifacts/geode-build-android32/zilko.xdbot.geode \
             artifacts/geode-build-android64/zilko.xdbot.geode
 
