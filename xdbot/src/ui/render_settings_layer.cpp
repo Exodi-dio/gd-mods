@@ -129,7 +129,7 @@ bool RenderSettingsLayer::setup() {
     argsInput = CCTextInputNode::create(150, 30, "args", "chatFont.fnt");
     argsInput->m_textField->setAnchorPoint({ 0.5f, 0.5f });
     argsInput->ignoreAnchorPointForPosition(true);
-    argsInput->getTextLabel->setAnchorPoint({ 0.5f, 0.5f });
+    argsInput->getTextLabel()->setAnchorPoint({ 0.5f, 0.5f });
     argsInput->setPosition(ccp(25, 86));
     argsInput->setLabelPlaceholderColor(ccc3(163, 135, 121));
     argsInput->setMouseEnabled(true);
@@ -165,7 +165,7 @@ bool RenderSettingsLayer::setup() {
     audioArgsInput = CCTextInputNode::create(150, 30, "audio args", "chatFont.fnt");
     audioArgsInput->m_textField->setAnchorPoint({ 0.5f, 0.5f });
     audioArgsInput->ignoreAnchorPointForPosition(true);
-    audioArgsInput->getTextLabel->setAnchorPoint({ 0.5f, 0.5f });
+    audioArgsInput->getTextLabel()->setAnchorPoint({ 0.5f, 0.5f });
     audioArgsInput->setPosition(ccp(18, 53));
     audioArgsInput->setLabelPlaceholderColor(ccc3(163, 135, 121));
     audioArgsInput->setMouseEnabled(true);
@@ -199,7 +199,7 @@ bool RenderSettingsLayer::setup() {
     videoArgsInput = CCTextInputNode::create(150, 30, "video args", "chatFont.fnt");
     videoArgsInput->m_textField->setAnchorPoint({ 0.5f, 0.5f });
     videoArgsInput->ignoreAnchorPointForPosition(true);
-    videoArgsInput->getTextLabel->setAnchorPoint({ 0.5f, 0.5f });
+    videoArgsInput->getTextLabel()->setAnchorPoint({ 0.5f, 0.5f });
     videoArgsInput->setPosition({19, 22});
     videoArgsInput->setLabelPlaceholderColor(ccc3(163, 135, 121));
     videoArgsInput->setMouseEnabled(true);
@@ -229,7 +229,7 @@ bool RenderSettingsLayer::setup() {
     secondsInput = CCTextInputNode::create(150, 30, "sec", "chatFont.fnt");
     secondsInput->m_textField->setAnchorPoint({ 0.5f, 0.5f });
     secondsInput->ignoreAnchorPointForPosition(true);
-    secondsInput->getTextLabel->setAnchorPoint({ 0.5f, 0.5f });
+    secondsInput->getTextLabel()->setAnchorPoint({ 0.5f, 0.5f });
     secondsInput->setPosition(ccp(50, -8));
     secondsInput->setLabelPlaceholderColor(ccc3(163, 135, 121));
     secondsInput->setMouseEnabled(true);
@@ -467,22 +467,22 @@ bool RenderSettingsLayer::setup() {
     menu->addChild(btn);
 
     if (usingApi) {
-        argsInput->getTextLabel->setOpacity(100);
-        audioArgsInput->getTextLabel->setOpacity(100);
+        argsInput->getTextLabel()->setOpacity(100);
+        audioArgsInput->getTextLabel()->setOpacity(100);
 
         argsInput->setID("disabled-input"_spr);
         audioArgsInput->setID("disabled-input"_spr);
 
         extensionInput->setEnabled(false);
-        extensionInput->getInputNode()->getTextLabel->setOpacity(100);
+        extensionInput->getInputNode()->getTextLabel()->setOpacity(100);
         extensionInput->getBGSprite()->setOpacity(40);
 
         fadeOutInput->setEnabled(false);
-        fadeOutInput->getInputNode()->getTextLabel->setOpacity(100);
+        fadeOutInput->getInputNode()->getTextLabel()->setOpacity(100);
         fadeOutInput->getBGSprite()->setOpacity(40);
 
         fadeInInput->setEnabled(false);
-        fadeInInput->getInputNode()->getTextLabel->setOpacity(100);
+        fadeInInput->getInputNode()->getTextLabel()->setOpacity(100);
         fadeInInput->getBGSprite()->setOpacity(40);
 
         onlySongToggle->setCascadeOpacityEnabled(true);

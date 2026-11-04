@@ -128,7 +128,7 @@ private:
 		intervalLbl2->setOpacity(g.autosaveIntervalEnabled ? 255 : 100);
 		intervalInput->getBGSprite()->setOpacity(g.autosaveIntervalEnabled ? 90 : 30);
 		intervalInput->setEnabled(g.autosaveIntervalEnabled);
-		intervalInput->getInputNode()->getTextLabel->setOpacity(g.autosaveIntervalEnabled ? 255 : 100);
+		intervalInput->getInputNode()->getTextLabel()->setOpacity(g.autosaveIntervalEnabled ? 255 : 100);
 		if (!g.autosaveIntervalEnabled) {
 			intervalInput->getInputNode()->detachWithIME();
 			intervalInput->getInputNode()->onClickTrackNode(false);
