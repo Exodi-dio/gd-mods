@@ -438,7 +438,7 @@ void Renderer::start() {
         }
 
         std::filesystem::path tempPath = std::filesystem::path(path).parent_path() / ("temp_" + std::filesystem::path(path).filename().string());
-        std::filesystem::path tempPathAudio = (Mod::get()->getSaveDir() / "temp_audio_file.wav");
+        std::filesystem::path tempPathAudio = (Mod::get()->getSaveDir() / "temp_audio_file.wav").toStdPath().unwrapOrDefault();
 
         if (usingApi) {
             std::string file = audioMode == AudioMode::Song ? songFile : "fmodoutput.wav";
