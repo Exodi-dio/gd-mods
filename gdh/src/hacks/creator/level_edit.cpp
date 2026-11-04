@@ -81,7 +81,7 @@ class $modify(LevelEditLevelTools, LevelTools) {
         hack.addHookPtr(self.getHook("LevelTools::verifyLevelIntegrity").unwrap());
     }
 
-    static bool verifyLevelIntegrity(string p0, int p1) {
+    static bool verifyLevelIntegrity(std::string p0, int p1) {
         if (LevelTools::verifyLevelIntegrity(p0, p1))
             return true;
             

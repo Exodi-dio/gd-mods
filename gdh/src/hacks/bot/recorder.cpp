@@ -88,7 +88,7 @@ class $modify(GJBaseGameLayer) {
 };
 
 class $modify(FMODAudioEngine) {
-    int playEffect(string path, float speed, float unknown, float volume) {
+    int playEffect(std::string path, float speed, float unknown, float volume) {
         if (GDH::Recorder::get().isRecording() && path == "playSound_01.ogg")
             path = "";
 
