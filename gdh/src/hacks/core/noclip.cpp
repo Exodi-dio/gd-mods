@@ -78,8 +78,8 @@ class $modify(NoclipPlayLayer, PlayLayer) {
         });
     }
 
-    bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-        if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
+    bool init(GJGameLevel* level, bool dontCreateObjects) {
+        if (!PlayLayer::init(level, dontCreateObjects)) return false;
         
         auto fields = m_fields.self();
         auto& config = Config::get();

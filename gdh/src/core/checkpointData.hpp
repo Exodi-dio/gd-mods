@@ -272,7 +272,7 @@ struct checkpoint_data {
     float m_somethingPlayerSpeedTime;
     float m_playerSpeedAC;
     bool m_fixRobotJump;
-    // gd::map<int, bool> m_holdingButtons;
+    // map<int, bool> m_holdingButtons;
     bool m_inputsLocked;
     bool m_gv0123;
     int m_iconRequestID;
@@ -295,17 +295,17 @@ struct checkpoint_data {
 
     std::array<bool, 3> m_clickReleased;
 
-    // gd::unordered_map<int, GJPointDouble> m_rotateObjectsRelated; // breaking
-    // gd::unordered_map<int, GameObject*> m_potentialSlopeMap; // breaking
-    // gd::unordered_set<int> m_ringRelatedSet; // breaking
+    // unordered_map<int, GJPointDouble> m_rotateObjectsRelated; // breaking
+    // unordered_map<int, GameObject*> m_potentialSlopeMap; // breaking
+    // unordered_set<int> m_ringRelatedSet; // breaking
 	
 	// cocos2d::CCArray* m_touchingRings; // original array
-    // gd::vector<cocos2d::CCObject*> m_touchingRings; // breaking
+    // vector<cocos2d::CCObject*> m_touchingRings; // breaking
 
-    // gd::unordered_set<int> m_touchedRings; // breaking
-    // gd::vector<float> m_playerFollowFloats; // breaking
-    // gd::map<int, bool> m_jumpPadRelated; // breaking
-    // gd::string m_currentRobotAnimation; // breaking
+    // unordered_set<int> m_touchedRings; // breaking
+    // vector<float> m_playerFollowFloats; // breaking
+    // map<int, bool> m_jumpPadRelated; // breaking
+    // string m_currentRobotAnimation; // breaking
 };
 
 namespace GDH { namespace PracticeFix {

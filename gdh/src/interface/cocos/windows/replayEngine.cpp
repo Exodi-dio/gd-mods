@@ -61,7 +61,7 @@ protected:
 
         auto closeBtn = CCSprite::create("GDH_closeBtn.png"_spr);
         closeBtn->setScale(0.75f);
-        m_closeBtn->setSprite(closeBtn);
+        m_closeBtn->setNormalImage(closeBtn);
 
         auto createLabel = [&menu](const std::string& text, const cocos2d::CCPoint& position, float scale = 0.6f) {
             auto label = geode::Label::create(text, "GoogleSans.fnt"_spr);
@@ -265,7 +265,7 @@ protected:
 
         auto closeBtn = CCSprite::create("GDH_closeBtn.png"_spr);
         closeBtn->setScale(0.75f);
-        m_closeBtn->setSprite(closeBtn);
+        m_closeBtn->setNormalImage(closeBtn);
 
         auto scroll = ScrollLayer::create({600.f, 180.f});
         scroll->setPosition({winSize.width / 2 - 300.f, 10.f});
@@ -284,7 +284,7 @@ protected:
             if (entry.is_regular_file() && entry.path().extension() == ".re4") {
                 if (GDH::Utils::isOnlyAsciiPath(entry)) {
                     std::string macroName = entry.path().stem().string();
-                    std::filesystem::path macroPath = entry.path();
+                    std::filesystem::path macroPath = entry.path().string();
     
                     auto menu = CCMenu::create();
                     menu->setContentSize({600.f, 25.f});
@@ -337,7 +337,7 @@ protected:
 
         auto closeBtn = CCSprite::create("GDH_closeBtn.png"_spr);
         closeBtn->setScale(0.75f);
-        m_closeBtn->setSprite(closeBtn);
+        m_closeBtn->setNormalImage(closeBtn);
 
         m_contentLayer = cocos2d::CCNode::create();
         m_contentLayer->setContentSize(m_mainLayer->getContentSize());
@@ -886,7 +886,7 @@ $execute {
                     auto pathOpt = std::move(res).unwrapOr(std::nullopt);
                     if (!pathOpt) return;
                     
-                    auto selectedPath = *pathOpt;
+                    auto selectedPath = std::filesystem::path((*pathOpt).string());
                     if (!GDH::Utils::isOnlyAsciiPath(selectedPath)) {
                         GDH::MaterialLayer(FLAlertLayer::create("Import", "Invalid path. Please remove any Cyrillic characters", "OK"))->show();
                         return;

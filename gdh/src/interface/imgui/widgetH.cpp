@@ -11,7 +11,7 @@
 #endif
 
 #define COLOR_F32(x) ImVec4 { (((x) >> 24) & 0xFF) / 255.0f, (((x) >> 16) & 0xFF) / 255.0f, (((x) >> 8) & 0xFF) / 255.0f, ((x) & 0xFF) / 255.0f }
-static const auto themeFilePath = geode::Mod::get()->getSaveDir() / "theme.json";
+static const auto themeFilePath = std::filesystem::path(geode::Mod::get()->getSaveDir().string()) / "theme.json";
 
 namespace ImGuiH {
     std::map<Color, ImVec4> colorTable = {
@@ -475,7 +475,7 @@ namespace ImGuiH {
                         auto pathOpt = std::move(res).unwrapOr(std::nullopt);
                         if (!pathOpt) return;
 
-                        auto selectedPath = *pathOpt;
+                        auto selectedPath = std::filesystem::path((*pathOpt).string());
                         if (!GDH::Utils::isOnlyAsciiPath(selectedPath)) {
                             AddPopup("Invalid path. Please remove any Cyrillic characters");
                             return;
@@ -515,7 +515,7 @@ namespace ImGuiH {
                         auto pathOpt = std::move(res).unwrapOr(std::nullopt);
                         if (!pathOpt) return;
 
-                        auto selectedPath = *pathOpt;
+                        auto selectedPath = std::filesystem::path((*pathOpt).string());
                         if (!GDH::Utils::isOnlyAsciiPath(selectedPath)) {
                             AddPopup("Invalid path. Please remove any Cyrillic characters");
                             return;

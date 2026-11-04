@@ -32,7 +32,7 @@ bool HackSettingsPopup::init(GDH::Hack& hack) {
 
     auto closeBtn = cocos2d::CCSprite::create("GDH_closeBtn.png"_spr);
     closeBtn->setScale(0.75f);
-    m_closeBtn->setSprite(closeBtn);
+    m_closeBtn->setNormalImage(closeBtn);
 
     m_scrollLayer = geode::prelude::ScrollLayer::create({240.f, 190.f});
     m_scrollLayer->setPosition({winSize.width / 2.f - 120.f, 10.f});

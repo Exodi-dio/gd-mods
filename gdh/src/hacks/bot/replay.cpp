@@ -400,8 +400,8 @@ class $modify(ReplayPlayLayer, PlayLayer) {
         tps.addHookPtr(self.getHook("PlayLayer::levelComplete").unwrap());
     }
 
-    bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-        if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
+    bool init(GJGameLevel* level, bool dontCreateObjects) {
+        if (!PlayLayer::init(level, dontCreateObjects)) return false;
         
         auto& engine = GDH::ReplayEngine::get();
         if (engine.get_actions_size() == 0) {

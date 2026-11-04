@@ -200,8 +200,8 @@ class $modify(FrameStepperPlayLayer, PlayLayer) {
         hack.addHookPtr(self.getHook("PlayLayer::resetLevel").unwrap());
     }
 
-    bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-        if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
+    bool init(GJGameLevel* level, bool dontCreateObjects) {
+        if (!PlayLayer::init(level, dontCreateObjects)) return false;
         m_fields.self();
         return true;
     }

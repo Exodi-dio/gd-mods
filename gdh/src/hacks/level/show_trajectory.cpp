@@ -204,8 +204,8 @@ class $modify(ShowTrajectoryPlayLayer, PlayLayer) {
         hack.addHookPtr(self.getHook("PlayLayer::playEndAnimationToPos").unwrap());
     }
 
-    bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-        if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
+    bool init(GJGameLevel* level, bool dontCreateObjects) {
+        if (!PlayLayer::init(level, dontCreateObjects)) return false;
 
         m_fields.self();
         TrajectoryManager::dummy_jump = TrajectoryManager::createVirtualPlayer(this);
@@ -254,7 +254,7 @@ class $modify(ShowTrajectoryBaseGameLayer, GJBaseGameLayer) {
         return GJBaseGameLayer::canBeActivatedByPlayer(player, object);
     }
 
-    void collisionCheckObjects(PlayerObject* player, gd::vector<GameObject*>* objects, int objectCount, float dt) {
+    void collisionCheckObjects(PlayerObject* player, vector<GameObject*>* objects, int objectCount, float dt) {
         if (!TrajectoryManager::is_simulating) {
             GJBaseGameLayer::collisionCheckObjects(player, objects, objectCount, dt);
             return;
@@ -266,7 +266,7 @@ class $modify(ShowTrajectoryBaseGameLayer, GJBaseGameLayer) {
 
         if (!player || !objects || objectCount <= 0) return;
 
-        auto addCollisionObject = [](GameObject* obj, gd::vector<GameObject*>& vec, int& count, int& index) {
+        auto addCollisionObject = [](GameObject* obj, vector<GameObject*>& vec, int& count, int& index) {
             if (count < index) {
                 vec.at(count) = obj;
             } else {
@@ -394,7 +394,7 @@ class $modify(ShowTrajectoryEffectGameObject, EffectGameObject) {
         hack.addHookPtr(self.getHook("EffectGameObject::triggerObject").unwrap());
     }
 
-    void triggerObject(GJBaseGameLayer* layer, int uniqueID, const gd::vector<int>* remapKeys) {
+    void triggerObject(GJBaseGameLayer* layer, int uniqueID, const vector<int>* remapKeys) {
         if (TrajectoryManager::is_simulating) return;
         EffectGameObject::triggerObject(layer, uniqueID, remapKeys);
     }

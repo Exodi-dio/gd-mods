@@ -14,7 +14,7 @@ class $modify(AllModesPlatformerGJBaseGameLayer, GJBaseGameLayer) {
         hack.addHookPtr(self.getHook("GJBaseGameLayer::collisionCheckObjects").unwrap());
     }
 
-    void collisionCheckObjects(PlayerObject* object, gd::vector<GameObject*>* objects, int objectCount, float dt) {
+    void collisionCheckObjects(PlayerObject* object, vector<GameObject*>* objects, int objectCount, float dt) {
     GJBaseGameLayer::collisionCheckObjects(object, objects, objectCount, dt);
 
     if (!m_isPlatformer || !object || !objects) return;

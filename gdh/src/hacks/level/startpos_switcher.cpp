@@ -92,8 +92,7 @@ class $modify(StartposSwitcherPlayLayer, PlayLayer) {
             }
 
             pl->m_isTestMode = (obj != nullptr);
-            pl->m_currentCheckpoint = nullptr;
-            pl->setStartPosObject(obj);
+            if (obj) pl->addLiveStartPosObject(obj);
             pl->resetLevel();
 
             if (config.get<bool>("level.startpos_switcher::reset_camera", false))

@@ -99,7 +99,7 @@ class $modify(LayoutModeGameObject, GameObject) {
         hack.addHookPtr(self.getHook("GameObject::addGlow").unwrap());
     }
 
-    void addGlow(gd::string p0) {
+    void addGlow(string p0) {
         GameObject::addGlow(p0);
 
         auto pl = PlayLayer::get();

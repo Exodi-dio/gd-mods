@@ -14,8 +14,8 @@ class $modify(PlayLayer) {
         }
     };
 
-    bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-        if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
+    bool init(GJGameLevel* level, bool dontCreateObjects) {
+        if (!PlayLayer::init(level, dontCreateObjects)) return false;
         m_fields.self();
         
         auto pl = PlayLayer::get();
@@ -88,7 +88,7 @@ class $modify(GJBaseGameLayer) {
 };
 
 class $modify(FMODAudioEngine) {
-    int playEffect(gd::string path, float speed, float unknown, float volume) {
+    int playEffect(string path, float speed, float unknown, float volume) {
         if (GDH::Recorder::get().isRecording() && path == "playSound_01.ogg")
             path = "";
 

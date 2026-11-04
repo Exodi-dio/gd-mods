@@ -215,8 +215,8 @@ class $modify(DiscordRPCPlayLayer, PlayLayer) {
         DiscordManager::get().updatePresence(DiscordState::InLevel, m_level);
     }
     
-    bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-        if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
+    bool init(GJGameLevel* level, bool dontCreateObjects) {
+        if (!PlayLayer::init(level, dontCreateObjects)) return false;
         m_fields.self();
 
         DiscordManager::get().updatePresence(DiscordState::InLevel, level);

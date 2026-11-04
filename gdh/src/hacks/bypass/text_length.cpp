@@ -12,7 +12,7 @@ class $modify(TextLengthCCTextInputNode, CCTextInputNode) {
         hack.addHookPtr(self.getHook("CCTextInputNode::updateLabel").unwrap());
     }
 
-    void updateLabel(gd::string str) {
+    void updateLabel(string str) {
         this->setMaxLabelLength(9999);
         CCTextInputNode::updateLabel(str);
     }

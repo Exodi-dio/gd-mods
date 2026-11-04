@@ -12,5 +12,5 @@ class $modify(NoCameraMoveCameraTriggerGameObject, CameraTriggerGameObject) {
         hack.addHookPtr(self.getHook("CameraTriggerGameObject::triggerObject").unwrap());
     }
 
-    void triggerObject(GJBaseGameLayer *p0, int p1, const gd::vector<int> *p2) {}
+    void triggerObject(GJBaseGameLayer *p0, int p1, const vector<int> *p2) {}
 };

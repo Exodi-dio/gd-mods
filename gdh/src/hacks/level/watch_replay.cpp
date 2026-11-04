@@ -23,8 +23,8 @@ class $modify(WatchReplayPlayLayer, PlayLayer) {
         }
     };
 
-    bool init(GJGameLevel* level, bool useReplay, bool dontRun) {
-        if (!PlayLayer::init(level, useReplay, dontRun)) return false;
+    bool init(GJGameLevel* level, bool dontRun) {
+        if (!PlayLayer::init(level, dontRun)) return false;
         m_fields.self();
         return true;
     }
@@ -82,10 +82,6 @@ class $modify(WatchReplayGJBaseGameLayer, GJBaseGameLayer) {
         auto& cps = CpsCounter::get();
         while (g_indexAction < g_actions.size() && m_gameState.m_currentProgress >= g_actions[g_indexAction].frame)
         {
-            #ifdef GEODE_IS_ANDROID
-            this->m_allowedButtons.clear();
-            #endif
-
             this->handleButton(g_actions[g_indexAction].down, g_actions[g_indexAction].button, g_actions[g_indexAction].isPlayer2);
 
             g_indexAction++;

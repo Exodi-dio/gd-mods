@@ -11,7 +11,7 @@
 #include <asp/fs.hpp>
 
 inline std::filesystem::path getFolderPath() {
-    return geode::Mod::get()->getSaveDir();
+    return std::filesystem::path(geode::Mod::get()->getSaveDir().string());
 }
 inline std::filesystem::path getFolderMacroPath() { return getFolderPath() / "Macros"; }
 inline std::filesystem::path getFolderPresetsPath() { return getFolderPath() / "Presets"; }
@@ -117,7 +117,7 @@ public:
             auto CheckDir = [](const std::filesystem::path& path)
             {
                 std::error_code ec;
-                if (!std::filesystem::is_directory(path, ec) || !asp::fs::exists(path))
+                if (!std::filesystem::is_directory(path, ec) || !asp::fs::exists(path.string()))
                 {
                     std::filesystem::create_directory(path, ec);
                 }

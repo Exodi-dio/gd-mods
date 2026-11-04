@@ -13,8 +13,8 @@ class $modify(ForcePlatformerPlayLayer, PlayLayer) {
         hack.addHookPtr(self.getHook("PlayLayer::init").unwrap());
     }
 
-    bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-        if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
+    bool init(GJGameLevel* level, bool dontCreateObjects) {
+        if (!PlayLayer::init(level, dontCreateObjects)) return false;
 
         if (m_player1) m_player1->togglePlatformerMode(true);
         if (m_player2) m_player2->togglePlatformerMode(true);
