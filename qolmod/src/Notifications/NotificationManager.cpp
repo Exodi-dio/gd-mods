@@ -56,5 +56,5 @@ void NotificationManager::update(float dt)
     if (getPositionY() < -y)
         setPositionY(-y);
 
-    this->setPositionY((getPositionY() + ((-y) - getPositionY()) * (10 * dt)));
+    this->setPositionY(getPositionY() + (-y - getPositionY()) * (10 * dt));
 }

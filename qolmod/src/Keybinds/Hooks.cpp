@@ -11,7 +11,7 @@ using namespace geode::prelude;
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
 class $modify (CCKeyboardDispatcher)
 {
-    bool dispatchKeyboardMSG(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat)
+    bool dispatchKeyboardMSG(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat, double timestamp)
     {
         KeyState struc;
         struc.shiftHeld = getShiftKeyPressed();
@@ -27,7 +27,7 @@ class $modify (CCKeyboardDispatcher)
             if (AndroidUI::get())
             {
                 // close one menu so that option displays are gone before the main popup
-                CCKeyboardDispatcher::get()->dispatchKeyboardMSG(enumKeyCodes::KEY_Escape, true, false);
+                CCKeyboardDispatcher::get()->dispatchKeyboardMSG(enumKeyCodes::KEY_Escape, true, false, 0.0);
             }            
             else
             {
@@ -40,7 +40,7 @@ class $modify (CCKeyboardDispatcher)
         if (KeybindManager::get()->processMSG(struc))
             return false;
 
-        return CCKeyboardDispatcher::dispatchKeyboardMSG(key, isKeyDown, isKeyRepeat);
+        return CCKeyboardDispatcher::dispatchKeyboardMSG(key, isKeyDown, isKeyRepeat, 0.0);
     }
 };
 #endif

@@ -409,7 +409,6 @@ namespace qolmod
             bool m_updateCustomContentSize;
             bool m_hasContentSize;
             bool m_isNoTouch;
-            cocos2d::CCSize m_contentSize;
             cocos2d::CCPoint m_lastPosition;
             int m_unk4C0;
             int m_unk4C4;

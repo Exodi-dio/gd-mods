@@ -419,7 +419,6 @@ void PlayerState::saveState(PlayerObject* player)
     SAVE_GO_MEMBER(m_updateCustomContentSize);
     SAVE_GO_MEMBER(m_hasContentSize);
     SAVE_GO_MEMBER(m_isNoTouch);
-    SAVE_GO_MEMBER(m_contentSize);
     SAVE_GO_MEMBER(m_lastPosition);
     SAVE_GO_MEMBER(m_unk4C0);
     SAVE_GO_MEMBER(m_unk4C4);
@@ -563,7 +562,6 @@ void PlayerState::loadState(PlayerObject* player)
     LOAD_PL_MEMBER(m_accelerationOrSpeed);
     LOAD_PL_MEMBER(m_snapDistance);
     LOAD_PL_MEMBER(m_ringJumpRelated);
-    // LOAD_PL_MEMBER(m_ringRelatedSet);
     LOAD_PL_MEMBER(m_objectSnappedTo);
     LOAD_PL_MEMBER(m_onFlyCheckpointTries);
     LOAD_PL_MEMBER(m_maybeSpriteRelated);
@@ -870,7 +868,6 @@ void PlayerState::loadState(PlayerObject* player)
     LOAD_GO_MEMBER(m_updateCustomContentSize);
     LOAD_GO_MEMBER(m_hasContentSize);
     LOAD_GO_MEMBER(m_isNoTouch);
-    LOAD_GO_MEMBER(m_contentSize);
     LOAD_GO_MEMBER(m_lastPosition);
     LOAD_GO_MEMBER(m_unk4C0);
     LOAD_GO_MEMBER(m_unk4C4);

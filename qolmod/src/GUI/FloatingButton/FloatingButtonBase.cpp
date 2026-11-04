@@ -47,10 +47,10 @@ void FloatingButtonBase::update(float dt)
 
     this->CCNode::setPosition(ccp(
         (getPositionX() + (position.x - getPositionX()) * t),
-        (getPositionY() + (position.y - getPositionY()) * t)
+        (getPositionY() + (position.y - getPositionY()) * t),
     ));
 
-    _opacity = (_opacity + ((isSelected ? 1.0f : opacity) - _opacity) * t);
+    _opacity = _opacity + ((isSelected ? 1.0f : opacity) - _opacity) * t;
     updateVisuals(_opacity);
 }
 
