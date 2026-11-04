@@ -2,7 +2,7 @@
 
 #include "../includes.hpp"
 
-class RenderSettingsLayer : public PopupCompat<>, public TextInputDelegate {
+class RenderSettingsLayer : public PopupCompat<> {
 	
 public:
 

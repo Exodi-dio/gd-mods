@@ -286,13 +286,13 @@ void RecordLayer::toggleFPS(bool on) { // forgotten
 
     CCSprite* spr = CCSprite::createWithSpriteFrameName("edit_leftBtn_001.png");
     spr->setScale(scaleSpr);
-    FPSLeft->setDisplayNode(spr);
+    FPSLeft->setSprite(spr);
     FPSLeft->setScale(scaleBtn);
     FPSLeft->setOpacity(opacityBtn);
 
     spr = CCSprite::createWithSpriteFrameName("edit_rightBtn_001.png");
     spr->setScale(scaleSpr);
-    FPSRight->setDisplayNode(spr);
+    FPSRight->setSprite(spr);
     FPSRight->setScale(scaleBtn);
     FPSRight->setOpacity(opacityBtn);
 
@@ -551,7 +551,7 @@ bool RecordLayer::setup() {
     m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
 
     m_closeBtn->setPosition(m_closeBtn->getPosition() + ccp(-6.75, 6.75));
-    m_closeBtn->getNormalImage()->setScale(0.575f);
+    m_closeBtn->getDisplayNode()->setScale(0.575f);
 
     menu = CCMenu::create();
     m_mainLayer->addChild(menu);

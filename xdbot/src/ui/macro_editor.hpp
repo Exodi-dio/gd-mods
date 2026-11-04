@@ -11,7 +11,7 @@ struct InputText {
     std::string action;
 };
 
-class MacroEditLayer : public PopupCompat<>, public TextInputDelegate {
+class MacroEditLayer : public PopupCompat<> {
 
 private:
     

@@ -1,6 +1,6 @@
 #include "../includes.hpp"
 
-class AutoSaveLayer : public PopupCompat<>, public TextInputDelegate {
+class AutoSaveLayer : public PopupCompat<> {
 
 private:
 

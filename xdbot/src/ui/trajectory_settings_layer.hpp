@@ -2,7 +2,7 @@
 #include "../includes.hpp"
 #include "../hacks/show_trajectory.hpp"
 
-class TrajectorySettingsLayer : public PopupCompat<>, public TextInputDelegate {
+class TrajectorySettingsLayer : public PopupCompat<> {
 
 public:
 
