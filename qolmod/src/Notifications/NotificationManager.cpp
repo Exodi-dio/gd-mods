@@ -14,7 +14,6 @@ NotificationManager* NotificationManager::get()
     {
         instance = new NotificationManager();
         instance->scheduleUpdate();
-        instance->onEnter();
     }
 
     return instance;

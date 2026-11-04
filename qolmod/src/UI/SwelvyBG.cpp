@@ -109,7 +109,6 @@ void SwelvyBG::visit()
         clip->addChild(child);
         clip->visit();
         clip->removeAllChildrenWithCleanup(false);
-        child->onEnter();
 
         last = child;
     }

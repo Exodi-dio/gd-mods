@@ -30,7 +30,6 @@ bool FloatingButtonBase::init()
     this->setContentSize(ccp(BUTTON_RADIUS, BUTTON_RADIUS));
     this->ignoreAnchorPointForPosition(false);
     this->scheduleUpdate();
-    this->onEnter();
 
     childNode = CCNode::create();
     childNode->setAnchorPoint(ccp(0.5f, 0.5f));
