@@ -1,0 +1,5 @@
+The Discord RPC library was originally created by Discord
+
+Modified by TobyAdd to remove unnecessary dependencies (rapidjson) and remove useless platforms (Windows only)
+
+https://github.com/discord/discord-rpc

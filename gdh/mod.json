@@ -1,0 +1,40 @@
+{
+	"geode": "6.0.0-alpha.1",
+	"gd": {
+		"win": "2.2081",
+		"android": "2.2091",
+		"mac": "2.2081"
+	},
+	"id": "tobyadd.gdh",
+	"name": "GDH",
+	"version": "v5.1.0-beta.6",
+	"developer": "TobyAdd",
+	"description": "Mod menu for Geometry Dash",
+	"early-load": true,
+	"tags": ["cheat", "gameplay", "utility", "customization", "interface", "universal", "offline", "enhancement"],
+	"links": {
+		"source": "https://gitlab.com/tobyadd/GDH",
+		"community": "https://discord.gg/ahYEz4MAwP",
+		"homepage": "https://tobyadd.pages.dev/GDH/"
+	},
+	"resources": {
+		"sprites": [
+			"res/*.png"
+		],
+		"fonts": {
+			"GoogleSans": {
+				"path": "res/GoogleSans-Regular.ttf",
+				"size": 80
+			}
+		}
+	},
+	"settings": {
+		"legacy-render": {
+			"name": "Legacy Render",
+			"description": "Possibly fix menu rendering issues on older devices",
+			"type": "bool",
+			"default": false,
+			"requires-restart": true
+		}
+	}
+}

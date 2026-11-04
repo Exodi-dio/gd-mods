@@ -1,0 +1,79 @@
+name: Build GDH
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [Android32, Android64]
+        include:
+          - target: Android32
+            os: ubuntu-latest
+          - target: Android64
+            os: ubuntu-latest
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download FFmpeg libs
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq p7zip-full > /dev/null
+          mkdir -p .cache/ffmpeg
+          curl -L --retry 3 -o .cache/ffmpeg/ffmpeg.7z \
+            https://gitlab.com/tobyadd/ffmpeg-android-x264-dev/-/releases/build/downloads/ffmpeg.7z
+          mkdir -p gdh/libs
+          7z x .cache/ffmpeg/ffmpeg.7z -ogdh/libs -y > /dev/null
+          ls gdh/libs/ffmpeg
+
+      - name: Build GDH
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          sdk: "nightly"
+          bindings: "Exodi-dio/bindings"
+          bindings-ref: "main"
+          path: gdh
+          target: ${{ matrix.target }}
+          build-config: Release
+          combine: true
+
+  package:
+    name: Package GDH
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Set up geode CLI
+        uses: robinraju/release-downloader@v1.13
+        with:
+          repository: geode-sdk/cli
+          latest: true
+          tarBall: false
+          zipBall: false
+          fileName: "*-linux.zip"
+          extract: true
+          out-file-path: ./cli
+
+      - run: chmod +x ./cli/geode && echo "$PWD/cli" >> $GITHUB_PATH
+
+      - name: Merge platforms into one .geode
+        run: |
+          geode package merge --zstd \
+            artifacts/geode-build-android32/tobyadd.gdh.geode \
+            artifacts/geode-build-android64/tobyadd.gdh.geode
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Build Output
+          path: artifacts/geode-build-android32/tobyadd.gdh.geode

@@ -1,0 +1,1 @@
+If you'd like to support me, you can buy a sponsorship subscription on Patreon: https://www.patreon.com/c/tobyadd/membership
