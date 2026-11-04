@@ -173,6 +173,9 @@ float LabelManager::getFPS()
 
 void LabelManager::update(float dt)
 {
+    if (dt <= 0.0f)
+        return;
+
     _timeLeft -= dt;
     _accum += 1 / dt;
     _frames++;

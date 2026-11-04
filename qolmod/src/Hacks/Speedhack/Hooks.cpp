@@ -13,6 +13,13 @@ bool CBFCheckMenuLayer::init()
 
 void SpeedhackScheduler::update(float dt)
 {
+    // Don't run QOLMod logic during loading to avoid freezing the loading screen
+    if (CCScene::get() && CCScene::get()->getChildByType<LoadingLayer>(0))
+    {
+        CCScheduler::update(dt);
+        return;
+    }
+
     Speedhack::get()->realDeltatime = dt;
     ColourUtils::get()->update(dt);
     LabelManager::get()->update(dt);
