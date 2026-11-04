@@ -30,14 +30,14 @@ void LoadMacroLayer::open(geode::Popup* layer, geode::Popup* layer2, bool autosa
 	std::filesystem::path path = Mod::get()->getSettingValue<asp::fs::Path>("macros_folder").toStdPath().unwrapOrDefault();
 
 	if (!std::filesystem::exists(path)) {
-		if (utils::file::createDirectoryAll(path).isErr())
+		if (utils::file::createDirectoryAll(path.string()).isErr())
 			return FLAlertLayer::create("Error", "There was an error getting the folder. ID: 6", "Ok")->show();
 	}
 
 	path = Mod::get()->getSettingValue<asp::fs::Path>("autosaves_folder").toStdPath().unwrapOrDefault();
 
 	if (!std::filesystem::exists(path)) {
-		if (utils::file::createDirectoryAll(path).isErr())
+		if (utils::file::createDirectoryAll(path.string()).isErr())
 			return FLAlertLayer::create("Error", "There was an error getting the folder. ID: 61", "Ok")->show();
 	}
 

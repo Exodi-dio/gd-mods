@@ -1,7 +1,7 @@
 #pragma once
 #include "../includes.hpp"
 
-class SaveMacroLayer : public geode::Popup {
+class SaveMacroLayer : public PopupCompat<> {
 
     TextInput* authorInput = nullptr;
     TextInput* descInput = nullptr;
@@ -79,7 +79,7 @@ public:
         std::filesystem::path path = Mod::get()->getSettingValue<asp::fs::Path>("macros_folder").toStdPath().unwrapOrDefault();
 
         if (!std::filesystem::exists(path)) {
-            if (!utils::file::createDirectoryAll(path).isOk())
+            if (!utils::file::createDirectoryAll(path.string()).isOk())
                 return FLAlertLayer::create("Error", ("There was an error getting the folder \"" + path.string() + "\". ID: 10").c_str(), "Ok")->show();
         }
 

@@ -2,7 +2,7 @@
 #include "../includes.hpp"
 #include "../hacks/show_trajectory.hpp"
 
-class TrajectorySettingsLayer : public geode::Popup, public TextInputDelegate {
+class TrajectorySettingsLayer : public PopupCompat<>, public TextInputDelegate {
 
 public:
 

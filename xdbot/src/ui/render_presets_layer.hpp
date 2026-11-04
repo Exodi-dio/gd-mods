@@ -1,7 +1,7 @@
 #include "../includes.hpp"
 #include "record_layer.hpp"
 
-class RenderPresetsLayer : public geode::Popup {
+class RenderPresetsLayer : public PopupCompat<> {
 
 public:
 
@@ -107,9 +107,9 @@ private:
         std::filesystem::path path = Mod::get()->getSettingValue<asp::fs::Path>("render_folder").toStdPath().unwrapOrDefault();
 
         if (std::filesystem::exists(path))
-            file::openFolder(path);
-        else if (geode::utils::file::createDirectoryAll(path).isOk())
-            file::openFolder(path);
+            file::openFolder(path.string());
+        else if (geode::utils::file::createDirectoryAll(path.string()).isOk())
+            file::openFolder(path.string());
         else
             FLAlertLayer::create("Error", "There was an error getting the folder. ID: 4", "Ok")->show();
     }
