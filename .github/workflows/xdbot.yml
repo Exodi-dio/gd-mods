@@ -49,4 +49,4 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           files: ${{ steps.build.outputs.build-output }}/*.geode
-          generate_release_notes: true
+          body: "Cross-platform xdBot build (Windows + Android32 + Android64 merged into one .geode). Built with Geode nightly SDK for GD 2.2091.\n\nNote: macOS/iOS builds are not available because the Geode bindings for GD 2.2091 lack addresses for several hooked functions on those platforms."
