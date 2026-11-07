@@ -8,18 +8,18 @@ Every release is organized per mod. Download the `.geode` for the mod you want a
 
 | Mod | Mod ID | Release tag | Platforms | Status |
 |-----|--------|-------------|-----------|--------|
-| Jukebox | `fleym.nongd` | `jukebox-v1.3-crossplatform` | Windows + Android32 + Android64 | ✅ Built |
-| GDH | `tobyadd.gdh` | `gdh-v3.0-android` | Android32 + Android64 | ✅ Built |
-| xdBot | `zilko.xdbot` | `xdbot-v1.3-crossplatform` | Android32 + Android64 | ✅ Built |
+| Jukebox | `fleym.nongd` | `jukebox-v1.4-crossplatform` | Windows + Android32 + Android64 | ✅ Built |
+| GDH | `tobyadd.gdh` | `gdh-v3.1-android` | Android32 + Android64 | ✅ Built |
+| xdBot | `zilko.xdbot` | `xdbot-v1.4-crossplatform` | Android32 + Android64 | ✅ Built |
 | Level Thumbnails | `cdc.level_thumbnails` | — | — | ❌ Blocked (Argon dep) |
 
 Each release contains a **single combined `.geode`** that merges all built platforms into one file.
 
 ### Downloads
 
-- **Jukebox:** https://github.com/Exodi-dio/gd-mods/releases/tag/jukebox-v1.3-crossplatform
-- **GDH:** https://github.com/Exodi-dio/gd-mods/releases/tag/gdh-v3.0-android
-- **xdBot:** https://github.com/Exodi-dio/gd-mods/releases/tag/xdbot-v1.3-crossplatform
+- **Jukebox:** https://github.com/Exodi-dio/gd-mods/releases/tag/jukebox-v1.4-crossplatform
+- **GDH:** https://github.com/Exodi-dio/gd-mods/releases/tag/gdh-v3.1-android
+- **xdBot:** https://github.com/Exodi-dio/gd-mods/releases/tag/xdbot-v1.4-crossplatform
 
 ## How mods are built
 
