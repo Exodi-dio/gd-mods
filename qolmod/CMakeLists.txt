@@ -46,18 +46,12 @@ include_directories(include src/Client src/Hacks/Speedhack src/Utils src/Notific
 
 # CPMAddPackage("gh:TheSillyDoggo/gd-imgui-cocos#2d33a3d") # should be geode
 
-CPMAddPackage(
-    NAME rift
-    GIT_REPOSITORY https://git.eclipse.menu/EclipseMenu/RIFT
-    GIT_TAG v1
-)
-
 CPMAddPackage("gh:rapidfuzz/rapidfuzz-cpp#main")
 CPMAddPackage("gh:maxnut/GDReplayFormat#72078e5")
 CPMAddPackage("gh:ZXShady/enchantum#116de86")
 CPMAddPackage("gh:dankmeme01/dbuf#main")
 #CPMAddPackage("gh:prevter/tint@1.0.0") tint::tint
 
-target_link_libraries(${PROJECT_NAME} rift rapidfuzz::rapidfuzz libGDR enchantum::enchantum dbuf)
+target_link_libraries(${PROJECT_NAME} rapidfuzz::rapidfuzz libGDR enchantum::enchantum dbuf)
 
 setup_geode_mod(${PROJECT_NAME})

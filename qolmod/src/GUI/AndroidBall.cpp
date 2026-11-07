@@ -23,6 +23,7 @@ AndroidBall* AndroidBall::get()
 bool AndroidBall::init()
 {
     this->retain();
+    this->onEnter();
     this->scheduleUpdate();
 
     background = CCSprite::create("circle.png");
@@ -165,8 +166,8 @@ void AndroidBall::update(float dt)
         float t = 10 * Speedhack::get()->getRealDeltaTime();
 
         this->setPosition(ccp(
-            (getPositionX() + (position.x - getPositionX()) * t),
-            (getPositionY() + (position.y - getPositionY()) * t)
+            std::lerp<double>(getPositionX(), position.x, t),
+            std::lerp<double>(getPositionY(), position.y, t)
         ));
     }
     else

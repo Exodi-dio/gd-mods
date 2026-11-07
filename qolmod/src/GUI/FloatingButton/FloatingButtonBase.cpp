@@ -30,6 +30,7 @@ bool FloatingButtonBase::init()
     this->setContentSize(ccp(BUTTON_RADIUS, BUTTON_RADIUS));
     this->ignoreAnchorPointForPosition(false);
     this->scheduleUpdate();
+    this->onEnter();
 
     childNode = CCNode::create();
     childNode->setAnchorPoint(ccp(0.5f, 0.5f));
@@ -46,11 +47,11 @@ void FloatingButtonBase::update(float dt)
     float t = 10 * dt;
 
     this->CCNode::setPosition(ccp(
-        (getPositionX() + (position.x - getPositionX()) * t),
-        (getPositionY() + (position.y - getPositionY()) * t)
+        std::lerp<double>(getPositionX(), position.x, t),
+        std::lerp<double>(getPositionY(), position.y, t)
     ));
 
-    _opacity = _opacity + ((isSelected ? 1.0f : opacity) - _opacity) * t;
+    _opacity = std::lerp<double>(_opacity, isSelected ? 1.0f : opacity, t);
     updateVisuals(_opacity);
 }
 

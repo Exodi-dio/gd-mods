@@ -5,10 +5,11 @@ using namespace qolmod;
 
 GestureManager* GestureManager::get()
 {
-    static GestureManager* instance = nullptr;
-
-    if (!instance)
-        instance = new GestureManager();
+    static GestureManager* instance = []{
+        auto pRet = new GestureManager();
+        pRet->onEnter();
+        return pRet;
+    }();
 
     return instance;
 }

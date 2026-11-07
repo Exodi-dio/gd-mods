@@ -14,6 +14,7 @@ NotificationManager* NotificationManager::get()
     {
         instance = new NotificationManager();
         instance->scheduleUpdate();
+        instance->onEnter();
     }
 
     return instance;
@@ -56,5 +57,5 @@ void NotificationManager::update(float dt)
     if (getPositionY() < -y)
         setPositionY(-y);
 
-    this->setPositionY(getPositionY() + (-y - getPositionY()) * (10 * dt));
+    this->setPositionY(std::lerp<double>(getPositionY(), -y, 10 * dt));
 }
