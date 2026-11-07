@@ -51,6 +51,7 @@ bool NongDropdownLayer::init(
     if (!Popup::init(width, height, bg)) { return false; }
 
     m_mainLayer->setContentSize({width, height});
+    if (m_bgSprite) m_bgSprite->setContentSize({width, height});
 
     m_songIDS = ids;
     m_parentWidget = parent;

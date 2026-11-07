@@ -107,6 +107,8 @@ namespace jukebox {
 bool NongAddPopup::init(const int songID, const std::optional<Song*> replacedNong) {
     const CCSize size = this->getPopupSize();
     if (!Popup::init(size.width, size.height)) { return false; }
+    m_mainLayer->setContentSize(size);
+    if (m_bgSprite) m_bgSprite->setContentSize(size);
     this->setTitle("Add Song");
     m_songID = songID;
     m_replacedNong = replacedNong;

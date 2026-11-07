@@ -28,6 +28,7 @@ public:
             return false;
 
         m_mainLayer->setContentSize({width, height});
+        if (m_bgSprite) m_bgSprite->setContentSize({width, height});
 
         return this->setup(std::forward<Args>(args)...);
     }

@@ -13,8 +13,8 @@ bool HacksLayer::init() {
     if (!Popup::init(460.f, 260.f, "GDH_square.png"_spr))
         return false;
 
-    // Ensure the main layer is exactly the size we positioned everything against.
     m_mainLayer->setContentSize({460.f, 260.f});
+    if (m_bgSprite) m_bgSprite->setContentSize({460.f, 260.f});
 
     auto& gui = GDH::Gui::get();
     auto& config = Config::get();

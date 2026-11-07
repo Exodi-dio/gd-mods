@@ -23,6 +23,7 @@ bool HackSettingsPopup::init(GDH::Hack& hack) {
     if (!geode::Popup::init(260.f, 230.f, "GDH_square.png"_spr)) return false;
 
     m_mainLayer->setContentSize({260.f, 230.f});
+    if (m_bgSprite) m_bgSprite->setContentSize({260.f, 230.f});
     m_hack = &hack;
     auto winSize = m_mainLayer->getContentSize();
 

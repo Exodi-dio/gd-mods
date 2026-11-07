@@ -30,6 +30,7 @@ bool IndexesPopup::init(
     if (!Popup::init(size.width, size.height)) { return false; }
 
     m_mainLayer->setContentSize(size);
+    if (m_bgSprite) m_bgSprite->setContentSize(size);
 
     m_indexes = std::move(indexes);
     m_setIndexesCallback = std::move(setIndexesCallback);

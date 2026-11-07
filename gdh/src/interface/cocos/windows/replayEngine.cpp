@@ -48,6 +48,7 @@ protected:
         if (!geode::Popup::init(360.f, 230.f, "GDH_square.png"_spr)) return false;
 
         m_mainLayer->setContentSize({360.f, 230.f});
+        if (m_bgSprite) m_bgSprite->setContentSize({360.f, 230.f});
 
         auto& recorder = GDH::Recorder::get();
         auto winSize = m_mainLayer->getContentSize();
@@ -259,6 +260,7 @@ protected:
         if (!geode::Popup::init(300.f, 220.f, "GDH_square.png"_spr)) return false;
 
         m_mainLayer->setContentSize({300.f, 220.f});
+        if (m_bgSprite) m_bgSprite->setContentSize({300.f, 220.f});
 
         auto winSize = m_mainLayer->getContentSize();
 
@@ -340,6 +342,7 @@ protected:
         if (!geode::Popup::init(410.f, 300.f, "GDH_square.png"_spr)) return false;
 
         m_mainLayer->setContentSize({410.f, 300.f});
+        if (m_bgSprite) m_bgSprite->setContentSize({410.f, 300.f});
 
         auto closeBtn = CCSprite::create("GDH_closeBtn.png"_spr);
         closeBtn->setScale(0.75f);

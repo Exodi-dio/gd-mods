@@ -26,6 +26,8 @@ bool IndexChoosePopup::init(
     std::vector<std::string> indexIDs, geode::Function<void(const std::string& indexID)> chooseIndex
 ) {
     if (!Popup::init(280.0f, 80.0f)) { return false; }
+    m_mainLayer->setContentSize({280.0f, 80.0f});
+    if (m_bgSprite) m_bgSprite->setContentSize({280.0f, 80.0f});
     m_indexIDs = std::move(indexIDs);
     m_chooseIndex = std::move(chooseIndex);
 
