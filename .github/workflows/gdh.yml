@@ -11,20 +11,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config:
-          - target: Win64
-            os: windows-latest
+        target: [Android32, Android64]
+        include:
           - target: Android32
             os: ubuntu-latest
           - target: Android64
             os: ubuntu-latest
-    name: ${{ matrix.config.target }}
-    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download FFmpeg libs (Android only)
-        if: matrix.config.target == 'Android32' || matrix.config.target == 'Android64'
+      - name: Download FFmpeg libs
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq p7zip-full > /dev/null
           mkdir -p .cache/ffmpeg
@@ -41,7 +39,7 @@ jobs:
           bindings: "Exodi-dio/bindings"
           bindings-ref: "main"
           path: gdh
-          target: ${{ matrix.config.target }}
+          target: ${{ matrix.target }}
           build-config: Release
           combine: true
 
