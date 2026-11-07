@@ -27,6 +27,8 @@ public:
         if (!geode::Popup::init(width, height, bg))
             return false;
 
+        m_mainLayer->setContentSize({width, height});
+
         return this->setup(std::forward<Args>(args)...);
     }
 };

@@ -33,7 +33,6 @@ void HacksTab::addToggle(GDH::Hack& hck) {
     bool disabled = hck.getDisabled();
 
     auto hackNode = CCMenu::create();
-    hackNode->setContentSize({columnWidth, 30.f});
     hackNode->setAnchorPoint({0, 0.5f});
 
     auto toggle = CCMenuItemExt::createTogglerWithFilename("GDH_togglerOn.png"_spr, "GDH_togglerOff.png"_spr, 0.8f, [&gui, ID](CCMenuItemToggler* sender) {
@@ -92,6 +91,9 @@ void HacksTab::addToggle(GDH::Hack& hck) {
         hackNode->addChild(descClick);
     }
 
+    // Size the row node after all children are added so absolute positions stay valid.
+    hackNode->setContentSize({columnWidth, 30.f});
+
     if (!m_currentRow || m_currentRow->getChildrenCount() >= 2) {
         prepareNewRow();
     }
@@ -140,7 +142,6 @@ void HacksTab::addSeparator(float height) {
 void HacksTab::prepareNewRow() {
     float columnWidth = 175.f;
     m_currentRow = CCMenu::create();
-    m_currentRow->setContentSize({columnWidth * 2 + 5.f, 32.f});
     m_currentRow->setLayout(
         geode::RowLayout::create()
             ->setGap(0.f)
@@ -148,6 +149,8 @@ void HacksTab::prepareNewRow() {
             ->setCrossAxisAlignment(geode::AxisAlignment::Center)
             ->setAutoScale(false)
     );
+    m_currentRow->setContentSize({columnWidth * 2 + 5.f, 32.f});
+    m_currentRow->updateLayout();
     m_scrollLayer->m_contentLayer->addChild(m_currentRow);
 }
 
@@ -156,7 +159,6 @@ void HacksTab::addHackToggle(const std::string& labelText, const std::string& ke
     float columnWidth = 175.f;
 
     auto node = CCMenu::create();
-    node->setContentSize({columnWidth, 30.f});
     node->setAnchorPoint({0, 0.5f});
     
     auto toggle = CCMenuItemExt::createTogglerWithFilename("GDH_togglerOn.png"_spr, "GDH_togglerOff.png"_spr, 0.8f, [key, callback = std::move(callback)](CCMenuItemToggler* sender) mutable {
@@ -179,6 +181,8 @@ void HacksTab::addHackToggle(const std::string& labelText, const std::string& ke
     label->setPosition({toggle->getPositionX() + 22.f, 15.f});
     node->addChild(label);
 
+    node->setContentSize({columnWidth, 30.f});
+
     if (!m_currentRow || m_currentRow->getChildrenCount() >= 2) prepareNewRow();
     m_currentRow->addChild(node);
     updateRowAlignment(m_currentRow);
@@ -194,7 +198,6 @@ void HacksTab::addConfigToggle(
     float columnWidth = 175.f;
 
     auto node = CCMenu::create();
-    node->setContentSize({columnWidth, 30.f});
     node->setAnchorPoint({0, 0.5f});
     
     auto toggle = CCMenuItemExt::createTogglerWithFilename(
@@ -219,6 +222,8 @@ void HacksTab::addConfigToggle(
     label->setPosition({toggle->getPositionX() + 22.f, 15.f});
     node->addChild(label);
 
+    node->setContentSize({columnWidth, 30.f});
+
     if (!m_currentRow || m_currentRow->getChildrenCount() >= 2) prepareNewRow();
     m_currentRow->addChild(node);
     updateRowAlignment(m_currentRow);
@@ -229,7 +234,6 @@ void HacksTab::addConfigIntInput(const std::string& labelText, const std::string
     float columnWidth = 175.f;
     
     auto node = CCMenu::create();
-    node->setContentSize({columnWidth, 30.f});
     
     auto input = geode::TextInput::create(60.f, "Val", "GoogleSans.fnt"_spr);
     if (auto* bg = input->getChildByType<geode::NineSlice>(0)) { 
@@ -258,6 +262,8 @@ void HacksTab::addConfigIntInput(const std::string& labelText, const std::string
     label->setPosition({60.f, 15.f});
     node->addChild(label);
     
+    node->setContentSize({columnWidth, 30.f});
+
     if (!m_currentRow || m_currentRow->getChildrenCount() >= 2) prepareNewRow();
     m_currentRow->addChild(node);
     updateRowAlignment(m_currentRow);
@@ -268,7 +274,6 @@ void HacksTab::addConfigFloatInput(const std::string& labelText, const std::stri
     float columnWidth = 175.f;
     
     auto node = CCMenu::create();
-    node->setContentSize({columnWidth, 30.f});
     
     auto input = geode::TextInput::create(60.f, "Val", "GoogleSans.fnt"_spr);
     if (auto* bg = input->getChildByType<geode::NineSlice>(0)) { 
@@ -296,6 +301,8 @@ void HacksTab::addConfigFloatInput(const std::string& labelText, const std::stri
     label->setScale(0.55f);
     label->setPosition({60.f, 15.f});
     node->addChild(label);
+
+    node->setContentSize({columnWidth, 30.f});
 
     if (!m_currentRow || m_currentRow->getChildrenCount() >= 2) prepareNewRow();
     m_currentRow->addChild(node);
@@ -341,7 +348,6 @@ void HacksTab::addConfigButton(const std::string& labelText, geode::Function<voi
     } 
     else {
         auto node = CCMenu::create();
-        node->setContentSize({columnWidth * 2, 30.f});
         node->setAnchorPoint({0, 0.5f});
 
         auto btnSprite = ButtonSprite::create(labelText.c_str(), 315, true, "GoogleSans.fnt"_spr, "GDH_button_01.png"_spr, 25.f, 0.6f);
@@ -351,6 +357,8 @@ void HacksTab::addConfigButton(const std::string& labelText, geode::Function<voi
         
         btnClick->setPosition({columnWidth - 5.f, 15.f});
         node->addChild(btnClick);
+
+        node->setContentSize({columnWidth * 2, 30.f});
 
         m_currentRow->addChild(node);
     }

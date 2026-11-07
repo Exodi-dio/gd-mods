@@ -18,6 +18,7 @@ protected:
     bool init(GDH::Labels::Corner corner, HacksTab* tab) {
         if (!geode::Popup::init(300.f, 220.f, "GDH_square.png"_spr)) return false;
 
+        m_mainLayer->setContentSize({300.f, 220.f});
         m_corner = corner;
         m_tab = tab;
 
@@ -137,6 +138,8 @@ protected:
 
     bool init(GDH::Labels::Corner corner, size_t index, HacksTab* tab) {
         if (!geode::Popup::init(280.f, 210.f, "GDH_square.png"_spr)) return false;
+
+        m_mainLayer->setContentSize({280.f, 210.f});
 
         auto closeBtn = CCSprite::create("GDH_closeBtn.png"_spr);
         closeBtn->setScale(0.75f);

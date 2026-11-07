@@ -49,6 +49,9 @@ bool NongDropdownLayer::init(
     const char* bg
 ) {
     if (!Popup::init(width, height, bg)) { return false; }
+
+    m_mainLayer->setContentSize({width, height});
+
     m_songIDS = ids;
     m_parentWidget = parent;
     m_defaultSongID = defaultSongID;

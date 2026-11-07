@@ -29,6 +29,8 @@ bool IndexesPopup::init(
     const CCSize size = this->getPopupSize();
     if (!Popup::init(size.width, size.height)) { return false; }
 
+    m_mainLayer->setContentSize(size);
+
     m_indexes = std::move(indexes);
     m_setIndexesCallback = std::move(setIndexesCallback);
 
