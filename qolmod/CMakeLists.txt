@@ -1,0 +1,63 @@
+cmake_minimum_required(VERSION 3.21)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if ("${GEODE_TARGET_PLATFORM}" STREQUAL "iOS" OR IOS)
+    set(CMAKE_OSX_ARCHITECTURES "arm64")
+    add_definitions(-DGLES_SILENCE_DEPRECATION)
+    add_definitions(-D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+else()
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+endif()
+
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+
+option(QOLMOD_22074 "2.2074 build help text" OFF)
+
+if (QOLMOD_22074)
+    file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/mod-2.2074.json" "${CMAKE_CURRENT_SOURCE_DIR}/mod.json")
+endif()
+
+project(CheatClient VERSION 1.0.0)
+
+file(GLOB SOURCES
+    include/src/*.cpp
+    src/*.cpp
+	src/*/*.cpp
+	src/*/*/*.cpp
+	src/*/*/*/*.cpp
+)
+
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
+
+# enable symbols on windows
+if (WIN32)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS)
+  set_target_properties(${PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
+if (NOT DEFINED ENV{GEODE_SDK})
+    message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
+else()
+    message(STATUS "Found Geode: $ENV{GEODE_SDK}")
+endif()
+
+add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
+include_directories(include src/Client src/Hacks/Speedhack src/Utils src/Notifications src/Localisation src/GUI src/UI/Nodes/Label src/UI src/API)
+
+# CPMAddPackage("gh:TheSillyDoggo/gd-imgui-cocos#2d33a3d") # should be geode
+
+CPMAddPackage(
+    NAME rift
+    GIT_REPOSITORY https://git.eclipse.menu/EclipseMenu/RIFT
+    GIT_TAG v1
+)
+
+CPMAddPackage("gh:rapidfuzz/rapidfuzz-cpp#main")
+CPMAddPackage("gh:maxnut/GDReplayFormat#72078e5")
+CPMAddPackage("gh:ZXShady/enchantum#116de86")
+CPMAddPackage("gh:dankmeme01/dbuf#main")
+#CPMAddPackage("gh:prevter/tint@1.0.0") tint::tint
+
+target_link_libraries(${PROJECT_NAME} rift rapidfuzz::rapidfuzz libGDR enchantum::enchantum dbuf)
+
+setup_geode_mod(${PROJECT_NAME})
