@@ -64,6 +64,7 @@ protected:
         };
 
         auto scroll = ScrollLayer::create({600.f, 180.f});
+        scroll->setAnchorPoint({0.f, 0.f});
         scroll->setPosition({winSize.width / 2 - 300.f, 10.f});
         scroll->m_contentLayer->setLayout(
             ColumnLayout::create()

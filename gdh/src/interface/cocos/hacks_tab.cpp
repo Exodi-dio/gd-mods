@@ -107,6 +107,7 @@ bool HacksTab::init() {
     setPosition({0, 0});
 
     m_scrollLayer = ScrollLayer::create({500.f, 250.f});
+    m_scrollLayer->setAnchorPoint({0.f, 0.f});
     m_scrollLayer->m_contentLayer->setLayout(
         geode::ColumnLayout::create()
             ->setAutoScale(false)
