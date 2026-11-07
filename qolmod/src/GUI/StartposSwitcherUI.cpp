@@ -161,7 +161,7 @@ void StartposSwitcherUI::updateUI()
     label->limitLabelWidth(80, 0.65f, 0);
 
     nameLabel->setVisible(showName);
-    nameLabel->setString(fmt::format("({})", gameLayer->m_startPosObject ? gameLayer->m_startPosObject->getDisplayName() : "None").c_str());
+    nameLabel->setString(fmt::format("({})", gameLayer->m_startPosObject ? "Startpos" : "None").c_str());
     nameLabel->limitLabelWidth(70, 0.35f, 0);
 
     if (usePercentage)
