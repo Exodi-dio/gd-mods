@@ -551,7 +551,9 @@ bool RecordLayer::setup() {
     m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
 
     m_closeBtn->setPosition(m_closeBtn->getPosition() + ccp(-6.75, 6.75));
-    m_closeBtn->getSprite()->setScale(0.575f);
+    if (auto* spr = m_closeBtn->getChildByType<cocos2d::CCSprite>(0)) {
+        spr->setScale(0.575f);
+    }
 
     menu = CCMenu::create();
     m_mainLayer->addChild(menu);
