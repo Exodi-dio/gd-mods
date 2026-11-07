@@ -47,6 +47,7 @@ bool HacksLayer::init() {
     m_mainLayer->addChild(panel);
 
     m_tabsScrollLayer = geode::ScrollLayer::create({200.f, 250.f});
+    m_tabsScrollLayer->setAnchorPoint({0.f, 0.f});
     m_tabsScrollLayer->setPosition({-95.f, 5.f});
 
     auto tabsMenu = CCMenu::create();
