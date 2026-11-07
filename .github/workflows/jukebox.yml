@@ -11,24 +11,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config:
-          - name: Windows
+        target: [Win64, Android32, Android64]
+        include:
+          - target: Win64
             os: windows-latest
-            target: Win64
-          - name: macOS
-            os: macos-latest
-            target: MacOS
-          - name: iOS
-            os: macos-latest
-            target: iOS
-          - name: Android32
+          - target: Android32
             os: ubuntu-latest
-            target: Android32
-          - name: Android64
+          - target: Android64
             os: ubuntu-latest
-            target: Android64
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -39,7 +31,7 @@ jobs:
           bindings: "Exodi-dio/bindings"
           bindings-ref: "main"
           path: jukebox
-          target: ${{ matrix.config.target }}
+          target: ${{ matrix.target }}
           build-config: Release
           combine: true
 
