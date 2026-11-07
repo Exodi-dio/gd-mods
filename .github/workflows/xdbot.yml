@@ -25,7 +25,7 @@ jobs:
       - name: Build xdBot
         uses: geode-sdk/build-geode-mod@main
         with:
-          sdk: "pre-release"
+          sdk: "latest"
           bindings: "Exodi-dio/bindings"
           bindings-ref: "main"
           path: xdbot
