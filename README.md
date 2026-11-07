@@ -11,7 +11,7 @@ Every release is organized per mod. Download the `.geode` for the mod you want a
 | Jukebox | `fleym.nongd` | `jukebox-v1.3-crossplatform` | Windows + Android32 + Android64 | ✅ Built |
 | GDH | `tobyadd.gdh` | `gdh-v3.0-android` | Android32 + Android64 | ✅ Built |
 | xdBot | `zilko.xdbot` | `xdbot-v1.3-crossplatform` | Android32 + Android64 | ✅ Built |
-| QOLMod | `thesillydoggo.qolmod` | — | Windows + Android32 + Android64 | 🔧 Ported from official source (rift replaced) |
+| QOLMod | `thesillydoggo.qolmod` | `qolmod-v1.1-android` | Windows + Android32 + Android64 | ✅ Built |
 | Level Thumbnails | `cdc.level_thumbnails` | — | — | ❌ Blocked (Argon dep) |
 
 Each release contains a **single combined `.geode`** that merges all built platforms into one file.
@@ -21,7 +21,7 @@ Each release contains a **single combined `.geode`** that merges all built platf
 - **Jukebox:** https://github.com/Exodi-dio/gd-mods/releases/tag/jukebox-v1.3-crossplatform
 - **GDH:** https://github.com/Exodi-dio/gd-mods/releases/tag/gdh-v3.0-android
 - **xdBot:** https://github.com/Exodi-dio/gd-mods/releases/tag/xdbot-v1.3-crossplatform
-- **QOLMod:** https://github.com/Exodi-dio/gd-mods/releases/tag/qolmod-v1.0-android
+- **QOLMod:** https://github.com/Exodi-dio/gd-mods/releases/tag/qolmod-v1.1-android
 
 ## How mods are built
 
@@ -41,6 +41,6 @@ Each mod lives in its own folder (`jukebox/`, `gdh/`, `xdbot/`, `qolmod/`, `leve
 
 - **Eclipse Menu** is NOT included: its source repository (`EclipseMenu/EclipseMenu`) returns 404 (deleted/unavailable), so it cannot be ported from source.
 - **Level Thumbnails** is blocked: its Argon 1.5.1 dependency is incompatible with Geode 6.x / GD 2.2091 and is unmaintained (no newer version). Fixing it would require removing Argon and rewriting networking/auth using Geode's built-in `web::WebRequest()`.
-- **QOLMod** ported from the official source (`TheSillyDoggo/GeodeMenu`). The original `rift` dependency (`https://git.eclipse.menu/EclipseMenu/RIFT`) was down and not on GitHub, so a minimal `rift` replacement was added in `qolmod/include/rift.hpp` + `qolmod/include/src/rift.cpp` implementing `rift::compile()`, `rift::Value`, and `rift::Script::run()` with `{variable}` placeholder substitution.
+- **QOLMod** ported from the official source (`TheSillyDoggo/GeodeMenu`). The original `rift` dependency (`https://git.eclipse.menu/EclipseMenu/RIFT`) was down and not on GitHub, so a minimal `rift` replacement was added in `qolmod/include/rift.hpp` + `qolmod/include/src/rift.cpp` implementing `rift::compile()`, `rift::Value`, and `rift::Script::run()` with `{variable}` placeholder substitution. `GameObject::getDisplayName()` is not bound in Geode 6.x bindings; replaced with a fallback string in the start position switcher UI.
 - xdBot is a botting/macro tool — use at your own risk in online levels.
 - GDH is a cheat mod menu — use at your own risk in online levels.
