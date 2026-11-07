@@ -11,10 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [Win64, Android32, Android64]
+        target: [Android32, Android64]
         include:
-          - target: Win64
-            os: windows-latest
           - target: Android32
             os: ubuntu-latest
           - target: Android64
@@ -42,11 +40,8 @@ jobs:
     steps:
       - uses: geode-sdk/build-geode-mod/combine@main
         id: build
-
-      - name: Create release (on tag)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+      - name: Upload merged geode
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.ref_name }}
-          files: ${{ steps.build.outputs.build-output }}/*.geode
-          body: "Cross-platform xdBot build (Windows + Android32 + Android64 merged into one .geode). Built with Geode nightly SDK for GD 2.2091.\n\nNote: macOS/iOS builds are not available because the Geode bindings for GD 2.2091 lack addresses for several hooked functions on those platforms."
+          name: xdbot-geode
+          path: ${{ steps.build.outputs.build-output }}/*.geode

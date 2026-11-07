@@ -50,11 +50,8 @@ jobs:
     steps:
       - uses: geode-sdk/build-geode-mod/combine@main
         id: build
-
-      - name: Create release (on tag)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+      - name: Upload merged geode
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.ref_name }}
-          files: ${{ steps.build.outputs.build-output }}/*.geode
-          body: "Cross-platform GDH build (Android32 + Android64 merged into one .geode). Built with Geode nightly SDK for GD 2.2091."
+          name: gdh-geode
+          path: ${{ steps.build.outputs.build-output }}/*.geode
