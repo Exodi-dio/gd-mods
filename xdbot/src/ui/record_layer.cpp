@@ -551,7 +551,7 @@ bool RecordLayer::setup() {
     m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
 
     m_closeBtn->setPosition(m_closeBtn->getPosition() + ccp(-6.75, 6.75));
-    m_closeBtn->getDisplayNode()->setScale(0.575f);
+    m_closeBtn->getSprite()->setScale(0.575f);
 
     menu = CCMenu::create();
     m_mainLayer->addChild(menu);
