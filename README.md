@@ -1,6 +1,6 @@
-# Geometry Dash 2.2091 Mods (Android)
+# Geometry Dash 2.2091 Mods (Cross-Platform)
 
-This repo builds and releases Geometry Dash mods for **GD 2.2091** on **Android (32 + 64-bit)**, using the **Geode nightly SDK** (`6.0.0-alpha.1`).
+This repo builds and releases Geometry Dash mods for **GD 2.2091**, using the **Geode nightly SDK** (`6.0.0-alpha.1`).
 
 ## Releases
 
@@ -8,26 +8,26 @@ Every release is organized per mod. Download the `.geode` for the mod you want a
 
 | Mod | Mod ID | Release tag | Status |
 |-----|--------|-------------|--------|
-| Jukebox | `fleym.nongd` | `jukebox-v1.0-android` | ✅ Built |
-| GDH | `tobyadd.gdh` | `gdh-v1.0-android` | ✅ Built |
-| xdBot | `zilko.xdbot` | `xdbot-v1.0-android` | ✅ Built |
+| Jukebox | `fleym.nongd` | `jukebox-v1.0-crossplatform` | ✅ Built |
+| GDH | `tobyadd.gdh` | `gdh-v1.0-crossplatform` | ✅ Built |
+| xdBot | `zilko.xdbot` | `xdbot-v1.0-crossplatform` | ✅ Built |
 | Level Thumbnails | `cdc.level_thumbnails` | — | ❌ Blocked (Argon dep) |
 
-Each release contains a single combined `.geode` that works on both Android32 and Android64.
+Each release contains a **single combined `.geode`** that works on **Windows, macOS, iOS, Android32 and Android64**.
 
 ### Downloads
 
-- **Jukebox:** https://github.com/Exodi-dio/gd-mods/releases/tag/jukebox-v1.0-android
-- **GDH:** https://github.com/Exodi-dio/gd-mods/releases/tag/gdh-v1.0-android
-- **xdBot:** https://github.com/Exodi-dio/gd-mods/releases/tag/xdbot-v1.0-android
+- **Jukebox:** https://github.com/Exodi-dio/gd-mods/releases/tag/jukebox-v1.0-crossplatform
+- **GDH:** https://github.com/Exodi-dio/gd-mods/releases/tag/gdh-v1.0-crossplatform
+- **xdBot:** https://github.com/Exodi-dio/gd-mods/releases/tag/xdbot-v1.0-crossplatform
 
 ## How mods are built
 
 Each mod lives in its own folder (`jukebox/`, `gdh/`, `xdbot/`, `level-thumbnails/`) with its own GitHub Action workflow under `.github/workflows/`. The workflow:
 
-1. Builds the mod for Android32 and Android64 with the Geode nightly SDK.
-2. Merges the two platform `.geode` files into one with `geode package merge --zstd`.
-3. Uploads the combined `.geode` as a release asset.
+1. Builds the mod for Windows, macOS, iOS, Android32 and Android64 with the Geode nightly SDK.
+2. Merges all platform `.geode` files into one cross-platform `.geode` with the Geode CLI (`geode package merge`).
+3. On a version tag (`gdh-v*`, `jukebox-v*`, `xdbot-v*`), creates a proper GitHub release with the combined `.geode` as an asset.
 
 ## Notes
 
