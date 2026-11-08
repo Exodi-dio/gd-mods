@@ -283,7 +283,7 @@ void GradientLayer::updateUI() {
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.f);
     
     updateWhiteToggle();
-    return true;
+    return;
 }
 
 void GradientLayer::onAddPoint(CCObject*) {
@@ -526,9 +526,6 @@ void GradientLayer::onHideToggle(CCObject* sender) {
     m_pointsHidden = !m_hideToggle->isToggled();
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.15f);
 void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
-    if (Mod::get()->getSettingValue<bool>("disable-keys")) return;
-
-    if (key == enumKeyCodes::KEY_Backspace)
         return onRemovePoint(nullptr);
 
     if (key == enumKeyCodes::KEY_Enter)
