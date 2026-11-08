@@ -23,6 +23,7 @@ enum class SettingType {
     Folder,
     Empty,
     MonologueSelect,
+    AmongUsColor,
 };
 
 enum class Anim {
