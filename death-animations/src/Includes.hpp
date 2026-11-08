@@ -19,6 +19,10 @@ enum class SettingType {
     SpeechBubbleSelect,
     Folder,
     Empty,
+    Speed,
+    AmongUsColor,
+    Scale,
+    MonologueSelect,
 };
 
 enum class Anim {
@@ -79,6 +83,36 @@ struct AnimationSetting {
     std::string description;
     SettingType type;
     std::vector<std::string> elements;
+};
+
+struct DeathAnimation {
+    std::string id;
+    std::string name;
+    std::string description;
+    SettingType type;
+    std::vector<std::string> elements;
+};
+
+struct AnimationParams {
+    std::string id;
+    std::string name;
+    std::string description;
+    SettingType type;
+    std::vector<std::string> elements;
+};
+
+struct ExtraParams {
+    std::string id;
+    std::string name;
+    std::string description;
+    SettingType type;
+    std::vector<std::string> elements;
+};
+
+struct NoobHSV {
+    float h;
+    float s;
+    float v;
 };
 
 inline const std::array<AnimationSetting, 8> defaultSettings = {{
