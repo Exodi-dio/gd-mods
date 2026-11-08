@@ -283,7 +283,7 @@ void GradientLayer::updateUI() {
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.f);
     
     updateWhiteToggle();
-    return;
+    return true;
 }
 
 void GradientLayer::onAddPoint(CCObject*) {
@@ -526,9 +526,13 @@ void GradientLayer::onHideToggle(CCObject* sender) {
     m_pointsHidden = !m_hideToggle->isToggled();
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.15f);
 void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
+	if (key == enumKeyCodes::KEY_Escape)
+		return onClose(nullptr);
+
+    if (Mod::get()->getSettingValue<bool>("disable-keys")) return;
+
+    if (key == enumKeyCodes::KEY_Backspace)
         return onRemovePoint(nullptr);
-}
-}
 
     if (key == enumKeyCodes::KEY_Enter)
         return onAddPoint(nullptr);
@@ -589,7 +593,7 @@ bool GradientLayer::scrollWheel(float y, float) {
     
     m_scroll = m_smoothScroll ? m_scroll + y : y;
     
-    if (m_scroll < 12 && m_scroll > -12 && m_smoothScroll) return;
+    if (m_scroll < 12 && m_scroll > -12 && m_smoothScroll) return true;
     
     int index = 0;
 
@@ -608,12 +612,12 @@ bool GradientLayer::scrollWheel(float y, float) {
     if (index < 0) index = static_cast<int>(m_buttons.size()) - 1;
 
     onIconButton(m_buttons[index]);
+    return true;
 }
 
 bool GradientLayer::init() {
     Popup::init(320, 280);
 
-    return true;
     Dispatch<CCNode*, CCRect>("timestepyt.gdneko/create-neko-rect").send(m_mainLayer, {178.5f, 75, 259, 126});
 
     setMouseEnabled(true);
