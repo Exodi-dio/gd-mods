@@ -1,3 +1,97 @@
+#pragma once
+
+#include <Geode/Geode.hpp>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <array>
+
+using namespace geode::prelude;
+
+enum class SettingType {
+    Toggle,
+    Text,
+    Percent,
+    PercentToggle,
+    Select,
+    CelesteColor,
+    CelesteFastToggle,
+    SpeechBubbleSelect,
+    Folder,
+    Empty,
+};
+
+enum class Anim {
+    AmongUs,
+    Celeste,
+    Jumpscare,
+    Maro,
+    CBFDetected,
+    Undertale,
+    Ghost,
+    Pop,
+    ToBeContinued,
+    SpeechBubble,
+    What,
+    NewBest,
+    Poof,
+    Blood,
+    MrHippo,
+    FadeOut,
+    Minecraft,
+    SquidGame,
+    SquidGame2,
+    FNAF,
+    Ambush,
+    JeffTheKiller,
+    JeffTheKiller2,
+    FiveNights,
+    PoppyPlaytime,
+    Scp173,
+    Granny,
+    Baldi,
+    Sonic,
+    Fnaf,
+    Fnaf2,
+    Fnaf3,
+    Fnaf4,
+    Fnaf5,
+    Fnaf6,
+    Fnaf7,
+    Fnaf8,
+    Fnaf9,
+    Fnaf10,
+    Fnaf11,
+    Fnaf12,
+    Fnaf13,
+    Fnaf14,
+    Fnaf15,
+    Fnaf16,
+    Fnaf17,
+    Fnaf18,
+    Fnaf19,
+    Fnaf20,
+};
+
+struct AnimationSetting {
+    std::string id;
+    std::string name;
+    std::string description;
+    SettingType type;
+    std::vector<std::string> elements;
+};
+
+inline const std::array<AnimationSetting, 8> defaultSettings = {{
+    { .id = "speed", .name = "Speed", .description = "The speed at which the animation plays.", .type = SettingType::Speed },
+    { .id = "only-after", .name = "Only After", .description = "Play the animation only if you die after a certain percentage.", .type = SettingType::Percent },
+    { .id = "probability", .name = "Probability", .description = "The probability that the animation will play.", .type = SettingType::Percent },
+    { .id = "prevent-early-restart", .name = "Prevent Early Restart", .description = "Prevent restarting the level while the animation is playing.", .type = SettingType::Toggle },
+    { .id = "play-sound-effects", .name = "Play Sound Effects", .description = "Play any sound effects associated with the animation.", .type = SettingType::Toggle },
+    { .id = "play-in-practice", .name = "Play in Practice", .description = "Play the animation in practice mode.", .type = SettingType::Toggle },
+    { .id = "play-in-testmode", .name = "Play in Testmode", .description = "Play the animation in test mode.", .type = SettingType::Toggle },
+    { .id = "only-on-new-best", .name = "Only on New Best", .description = "Play the animation only when achieving a new best.", .type = SettingType::Toggle }
+}};
+
 inline const std::unordered_map<int, std::vector<AnimationSetting>> extraSettings = {
     { Anim::AmongUs, std::vector<AnimationSetting>{ { .id = "animation", .name = "Kill Animation", .description = "The Among Us kill animation that plays on death.", .type = SettingType::Select, .elements = { "Random", "Gun", "Knife", "Neck", "Alien" } }, { .id = "colors", .name = "Colors", .description = "The colors of the impostor and victim in the animation.", .type = SettingType::AmongUsColor, .elements = { "Player Colors", "Custom" } } } },
     { Anim::Celeste, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the death/respawn animation on the second player as well.", .type = SettingType::Toggle }, { .id = "explosion-color", .name = "Explosion Color", .description = "The color to use for the explosion animation.", .type = SettingType::CelesteColor }, { .id = "respawn-animation", .name = "Respawn Animation", .description = "Play the Celeste respawn animation.", .type = SettingType::Toggle }, { .id = "shockwave", .name = "Shockwave", .description = "Play the shockwave effect.", .type = SettingType::Toggle }, { .id = "bounce-off", .name = "Bounce Off", .description = "Bounce the player off.", .type = SettingType::Toggle }, { .id = "speed-affects-respawn", .name = "Speed Affects Respawn", .description = "The Speed setting will affect the respawn animation (if enabled) as well.", .type = SettingType::Toggle }, { .id = "fast", .name = "Fast", .description = "Skip the wait time before the explosion effect.", .type = SettingType::CelesteFastToggle }, { .id = "transition", .name = "Transition", .description = "The Celeste transition to use in the animation.", .type = SettingType::Select, .elements = { "None", "Random", "Chapter 1", "Chapter 2", "Chapter 3", "Chapter 4", "Chapter 5", "Chapter 6", "Chapter 7", "Chapter 8" } } } },
