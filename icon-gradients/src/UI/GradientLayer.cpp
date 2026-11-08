@@ -283,6 +283,7 @@ void GradientLayer::updateUI() {
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.f);
     
     updateWhiteToggle();
+    return true;
 }
 
 void GradientLayer::onAddPoint(CCObject*) {
@@ -525,10 +526,6 @@ void GradientLayer::onHideToggle(CCObject* sender) {
     m_pointsHidden = !m_hideToggle->isToggled();
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.15f);
 }
-
-        point->setColor(color);
-
-    save();
     updateGradient();
 }
 
@@ -595,8 +592,8 @@ void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
 	return FLAlertLayer::keyDown(key, timestamp);
 }
 
-void GradientLayer::scrollWheel(float y, float) {
-    if (m_buttons.empty() || Mod::get()->getSettingValue<bool>("disable-keys")) return;
+bool GradientLayer::scrollWheel(float y, float) {
+    if (m_buttons.empty() || Mod::get()->getSettingValue<bool>("disable-keys")) return true;
     
     m_scroll = m_smoothScroll ? m_scroll + y : y;
     
