@@ -607,8 +607,8 @@ CCGLProgram* Utils::createShader(const std::string& key, bool linear, bool blend
             program->autorelease();
 
         program->initWithVertexShaderFilename(
-            string::pathToString(vertPath).c_str(),
-            string::pathToString(shaderPath).c_str()
+            vertPath.string().c_str(),
+            shaderPath).c_str(.string()
         );
 
         program->addAttribute(kCCAttributeNamePosition, kCCVertexAttrib_Position);
