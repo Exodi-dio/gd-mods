@@ -525,6 +525,7 @@ void GradientLayer::onPlayerToggle(PlayerToggle* toggle) {
 void GradientLayer::onHideToggle(CCObject* sender) {
     m_pointsHidden = !m_hideToggle->isToggled();
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.15f);
+}
 void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
 	if (key == enumKeyCodes::KEY_Escape)
 		return onClose(nullptr);
@@ -612,6 +613,7 @@ bool GradientLayer::scrollWheel(float y, float) {
     if (index < 0) index = static_cast<int>(m_buttons.size()) - 1;
 
     onIconButton(m_buttons[index]);
+    return true;
 }
 
 bool GradientLayer::init() {
