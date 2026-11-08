@@ -1,0 +1,327 @@
+{
+	"geode": "6.0.0-alpha.1",
+	"gd": {
+		"win": "2.2091",
+		"android": "2.2091",
+		"mac": "2.2091",
+		"ios": "2.2091"
+	},
+	"id": "zhulis.blitzkrieg",
+	"name": "Blitzkrieg",
+	"version": "v2.3.5",
+	"developer": "Zhulis",
+	"description": "Automatic practice progression tracker for GD",
+	"tags": [
+		"gameplay",
+		"interface",
+		"performance",
+		"enhancement",
+		"offline",
+		"utility",
+		"customization"
+	],
+	"dependencies": {
+		"cvolton.level-id-api": "v2.0.0",
+		"geode.node-ids": ">=v1.23.0"
+	},
+	"links": {
+		"homepage": "https://www.blitzkrieg-mod.com",
+		"community": "https://discord.gg/duuG4RqJKh",
+		"source": "https://github.com/ZhulinskiiDanil/blitzkrieg"
+	},
+	"resources": {
+		"sprites": [
+			"resources/logo-circle.png",
+			"resources/startpos-button.png",
+			"resources/sprites/*.png",
+			"resources/sprites/range/*.png",
+			"resources/sprites/tabs/*.png"
+		],
+		"spritesheets": {
+			"Borders": [
+				"resources/sprites/borders/*.png"
+			],
+			"Buttons": [
+				"resources/sprites/buttons/*.png"
+			]
+		},
+		"files": [
+			"resources/audio/progress_complete.mp3",
+			"resources/audio/stage_complete.mp3"
+		]
+	},
+	"settings": {
+		"gameplay-settings": {
+			"type": "title",
+			"name": "Gameplay"
+		},
+		"ignore-practice-mode": {
+			"type": "bool",
+			"name": "Ignore Practice Mode",
+			"description": "Do not track runs or update progression while practicing in Practice Mode.",
+			"default": false
+		},
+		"enable-speedhack-detection": {
+			"name": "Enable Speedhack Detection",
+			"description": "Detects speed manipulation and prevents affected runs from being counted.",
+			"type": "bool",
+			"default": true
+		},
+		"ui-settings": {
+			"type": "title",
+			"name": "Interface"
+		},
+		"expand-progress-by-default": {
+			"type": "bool",
+			"name": "Auto-expand progress details",
+			"description": "Automatically expand progress details in the stage browser.",
+			"default": true
+		},
+		"disable-progress-expansion-animation": {
+			"type": "bool",
+			"name": "Disable expansion animation",
+			"description": "Disable the animation used when progress statistics expand.",
+			"default": false
+		},
+		"replace-practice-bar-with-blitzkrieg": {
+			"type": "bool",
+			"name": "Blitzkrieg instead of practice bar",
+			"description": "Replace Geometry Dash's practice bar with the Blitzkrieg progression bar.",
+			"default": true
+		},
+		"practice-bar-divisions-color": {
+			"type": "color",
+			"name": "Practice stage divider color",
+			"description": "Color of the stage division markers in the progression bar.",
+			"default": "#ffffff",
+			"enable-if": "replace-practice-bar-with-blitzkrieg"
+		},
+		"practice-bar-stages-fill-color": {
+			"name": "Stage progression fill color",
+			"type": "color",
+			"default": "#ff0052",
+			"enable-if": "replace-practice-bar-with-blitzkrieg"
+		},
+		"practice-bar-ranges-fill-color": {
+			"name": "Run progression fill color",
+			"type": "color",
+			"default": "#ffc8cf",
+			"enable-if": "replace-practice-bar-with-blitzkrieg"
+		},
+		"practice-bar-divisions-transparency": {
+			"type": "float",
+			"name": "Stage divider opacity",
+			"description": "Opacity of stage division markers in the Blitzkrieg progression bar.",
+			"default": 0.4,
+			"min": 0.1,
+			"max": 1,
+			"enable-if": "replace-practice-bar-with-blitzkrieg",
+			"control": {
+				"slider": true,
+				"slider-step": 0.1,
+				"arrow-step": 0.1
+			}
+		},
+		"streamer-mode": {
+			"type": "title",
+			"name": "Streamer mode"
+		},
+		"enable-streamer-mode": {
+			"type": "bool",
+			"name": "Enable streamer mode",
+			"description": "Hide profile names by showing only their first letter in the interface.",
+			"default": false
+		},
+		"notifications-settings": {
+			"type": "title",
+			"name": "Notifications"
+		},
+		"disable-run-notifications": {
+			"type": "bool",
+			"name": "Disable run notifications",
+			"description": "Do not show notifications when a run is recorded.",
+			"default": false
+		},
+		"disable-run-notification-sound": {
+			"type": "bool",
+			"name": "Disable run notification sound",
+			"description": "Keep run notifications visible but mute their sound.",
+			"default": false
+		},
+		"sfx-settings": {
+			"type": "title",
+			"name": "SFX"
+		},
+		"ignore-built-in-game-sfx": {
+			"name": "Ignore the game's built-in SFX",
+			"description": "Mute Geometry Dash's built-in sound effects while Blitzkrieg SFX are active.",
+			"type": "bool",
+			"default": false
+		},
+		"sfx-volume": {
+			"name": "SFX volume",
+			"description": "Set the volume of Blitzkrieg progress and stage sounds.",
+			"type": "float",
+			"default": 1,
+			"min": 0,
+			"max": 1,
+			"control": {
+				"slider": true,
+				"slider-step": 0.1,
+				"arrow-step": 0.1
+			}
+		},
+		"sfx-use-custom-sounds": {
+			"name": "Use custom SFX",
+			"type": "bool",
+			"default": false,
+			"description": "Use custom sounds selected below for progress and stage completions."
+		},
+		"sfx-progress-path": {
+			"name": "Progress pass SFX",
+			"type": "file",
+			"description": "Custom sound played when a run completes a progression range.",
+			"enable-if": "sfx-use-custom-sounds",
+			"default": {
+				"android": "",
+				"mac": "",
+				"win": "",
+				"ios": ""
+			},
+			"control": {
+				"dialog": "open",
+				"filters": [
+					{
+						"files": [
+							"*.mp3",
+							"*.ogg"
+						],
+						"description": "Sound Files"
+					}
+				]
+			}
+		},
+		"sfx-stage-path": {
+			"name": "Stage pass SFX",
+			"type": "file",
+			"description": "Custom sound played when a training stage is completed.",
+			"enable-if": "sfx-use-custom-sounds",
+			"default": {
+				"android": "",
+				"mac": "",
+				"win": "",
+				"ios": ""
+			},
+			"control": {
+				"dialog": "open",
+				"filters": [
+					{
+						"files": [
+							"*.mp3",
+							"*.ogg"
+						],
+						"description": "Sound Files"
+					}
+				]
+			}
+		},
+		"sfx-achievement-path": {
+			"name": "Achievement SFX",
+			"type": "file",
+			"description": "Custom sound played when an achievement is unlocked or the daily goal is reached. The stage sound is used when it is empty.",
+			"enable-if": "sfx-use-custom-sounds",
+			"default": {
+				"android": "",
+				"mac": "",
+				"win": "",
+				"ios": ""
+			},
+			"control": {
+				"dialog": "open",
+				"filters": [
+					{
+						"files": [
+							"*.mp3",
+							"*.ogg"
+						],
+						"description": "Sound Files"
+					}
+				]
+			}
+		},
+		"backups": {
+			"type": "title",
+			"name": "Backups"
+		},
+		"auto-backups": {
+			"type": "bool",
+			"name": "Automatic backups",
+			"description": "Back up all profiles when the game starts, at most once per interval. Profiles are also backed up before they are deleted, imported or regenerated.",
+			"default": true
+		},
+		"backups-interval": {
+			"type": "int",
+			"name": "Automatic backup interval (hours)",
+			"description": "How old the last automatic backup must be before a new one is made.",
+			"default": 12,
+			"min": 1,
+			"max": 168,
+			"enable-if": "auto-backups"
+		},
+		"backups-keep": {
+			"type": "int",
+			"name": "Automatic backups to keep",
+			"description": "Older automatic backups are deleted. Manual backups and the ones made before a delete, import or restore are kept until you delete them.",
+			"default": 10,
+			"min": 1,
+			"max": 50,
+			"enable-if": "auto-backups"
+		},
+		"keybinds": {
+			"type": "title",
+			"name": "Keybinds"
+		},
+		"next-stage-keybind": {
+			"type": "keybind",
+			"name": "Switch to the next stage",
+			"default": [
+				"D",
+				"E"
+			]
+		},
+		"prev-stage-keybind": {
+			"type": "keybind",
+			"name": "Switch to the previous stage",
+			"default": [
+				"A",
+				"Q"
+			]
+		},
+		"open-stage-keybind": {
+			"type": "keybind",
+			"name": "Open the selected stage",
+			"description": "Opens the stage selected on the Stage Graph in the Stage Browser",
+			"default": [
+				"Enter"
+			]
+		},
+		"developer-settings": {
+			"type": "title",
+			"name": "Developer"
+		},
+		"debug-mode": {
+			"type": "bool",
+			"name": "Debug mode",
+			"description": "Write detailed diagnostic logs, such as how each run is assigned to a range. Useful for bug reports.",
+			"default": false
+		},
+		"debug-actions": {
+			"type": "button",
+			"name": "Debug logs",
+			"description": "Logs are saved to the <cy>geode/logs</c> folder. Send the newest <cy>.log</c> file when reporting a bug.",
+			"buttons": {
+				"open-logs-folder": "Open Logs Folder"
+			}
+		}
+	}
+}

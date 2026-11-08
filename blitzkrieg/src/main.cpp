@@ -1,0 +1,522 @@
+#include <Geode/Geode.hpp>
+#include <Geode/binding/FMODAudioEngine.hpp>
+#include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/PlayLayer.hpp>
+
+#include <chrono>
+#include <ctime>
+#include <deque>
+#include <optional>
+
+#include "./utils/generateDSMessageByClosedRun.hpp"
+#include "./events/RunClosedEvent.hpp"
+#include "./serialization/profile/index.hpp"
+#include "./store/GlobalStore.hpp"
+#include "./store/SessionStore/SessionStore.hpp"
+#include "./store/BackupStore/BackupStore.hpp"
+#include "./store/Achievements/Achievements.hpp"
+#include "./utils/playSfx.hpp"
+
+using namespace geode::prelude;
+
+$on_mod(Loaded)
+{
+    // The session log can be large, read it before the first attempt
+    SessionStore::get();
+
+    BackupStore::get()->createAutomaticIfDue();
+}
+
+class $modify(BlitzPlayLayer, PlayLayer)
+{
+    struct Fields
+    {
+        geode::comm::ListenerHandle runClosedListener;
+        async::TaskHolder<utils::web::WebResponse> m_task;
+
+        CCObject *firstIgnoredDamageObject = nullptr;
+
+        std::vector<Profile> profiles;
+
+        bool hasRespawned = false;
+        bool isNoclip = false;
+        bool isSpeedhack = false;
+        int speedhackViolations = 0;
+
+        bool speedhackArmed = false;
+        float speedhackStartX = 0.f;
+
+        double realDeltaSum = 0.0;
+        double gameDeltaSum = 0.0;
+
+        double expectedTimeWarp = 1.0;
+
+        std::optional<
+            std::chrono::steady_clock::time_point>
+            speedhackLastFrame;
+
+        std::deque<double> realDeltaHistory;
+        std::deque<double> gameDeltaHistory;
+
+        float attStartTime = 0.f;
+        float attEndTime = 0.f;
+
+        // For the session log
+        std::time_t attStartedAt = 0;
+        float attFrom = 0.f;
+        float attTo = 0.f;
+    };
+
+    static void onModify(auto &self)
+    {
+        if (!self.setHookPriorityPre("PlayLayer::destroyPlayer", Priority::First))
+            geode::log::warn("Failed to set hook priority.");
+    }
+
+public:
+    bool init(GJGameLevel *level, bool p1, bool p2)
+    {
+        if (!PlayLayer::init(level, p1, p2))
+            return false;
+
+        prepareSfx();
+
+        m_fields->runClosedListener = RunClosedEvent().listen(
+            [this](float from, float to, Profile *profile, Range *closedRange, Stage *closedStage)
+            {
+                if (!profile->discordWebhookForRunNotificationsEnabled)
+                    return ListenerResult::Propagate;
+
+                std::string msg = generateDSMessageByClosedRun(from, to, profile, closedRange, closedStage);
+                std::string webhook = profile->discordWebhookForRunNotifications;
+
+                utils::web::MultipartForm form;
+                form.param("content", msg);
+
+                auto req = utils::web::WebRequest()
+                               .bodyMultipart(form)
+                               .timeout(std::chrono::seconds(15))
+                               .post(webhook);
+
+                m_fields->m_task.spawn(
+                    std::move(req),
+                    [](utils::web::WebResponse res)
+                    {
+                        if (!res.ok())
+                            geode::log::error("Failed to send webhook: {} (code {})", res.errorMessage(), res.code());
+                    });
+
+                return ListenerResult::Propagate;
+            });
+
+        m_fields->profiles = GlobalStore::get()->getProfiles();
+        return true;
+    }
+
+    void postUpdate(float dt)
+    {
+        if (
+            Mod::get()->getSettingValue<bool>(
+                "enable-speedhack-detection"))
+        {
+            checkSpeedhack(dt);
+        }
+
+        PlayLayer::postUpdate(dt);
+    }
+
+    void updateTimeWarp(float timeWarp)
+    {
+        PlayLayer::updateTimeWarp(timeWarp);
+
+        m_fields->expectedTimeWarp =
+            static_cast<double>(timeWarp);
+
+        resetSpeedhackSamples();
+    }
+
+    void startGame()
+    {
+        PlayLayer::startGame();
+
+        prepareSpeedhackDetection();
+    }
+
+    void resetLevel()
+    {
+        PlayLayer::resetLevel();
+        resetState();
+
+        prepareSpeedhackDetection();
+
+        m_fields->hasRespawned = true;
+        m_fields->attStartTime = this->timeForPos(m_player1->getPosition(), 0, 0, true, 0);
+        m_fields->attStartedAt = std::time(nullptr);
+        m_fields->attFrom = this->getCurrentPercent();
+
+        GlobalStore::get()->setRunStart(
+            this->getCurrentPercent());
+    }
+
+    void levelComplete()
+    {
+        PlayLayer::levelComplete();
+
+        if (!m_fields->hasRespawned)
+            return;
+        m_fields->hasRespawned = false;
+
+        if (!m_level->isPlatformer())
+        {
+            m_fields->attEndTime = this->timeForPos({m_levelLength, 0}, 0, 0, true, 0);
+            m_fields->attTo = 100.f;
+            GlobalStore::get()->setRunEnd(100.f);
+            checkRun();
+        }
+
+        resetState();
+    }
+
+    void checkRun()
+    {
+        auto currentProfile = GlobalStore::get()->getProfileByLevel(BlitzPlayLayer::get()->m_level);
+
+        // Levels without a profile are not tracked, the log stays about tracked ones
+        if (!currentProfile)
+            return;
+
+        const bool ignorePractice = Mod::get()->getSettingValue<bool>("ignore-practice-mode");
+        const auto timePlayedForAttempt = m_fields->attEndTime - m_fields->attStartTime;
+
+        // ! --- Session log entry --- !
+        SessionAttempt report;
+        report.levelId = m_level->m_levelID
+                             ? utils::numToString(m_level->m_levelID.value())
+                             : utils::numToString(EditorIDs::getID(m_level));
+        report.levelName = m_level->m_levelName;
+        report.profileId = currentProfile->id;
+        report.profileName = currentProfile->profileName;
+        report.startedAt = m_fields->attStartedAt;
+        report.endedAt = std::time(nullptr);
+        report.duration = timePlayedForAttempt;
+        report.from = m_fields->attFrom;
+        report.to = m_fields->attTo;
+
+        if (ignorePractice && this->m_isPracticeMode)
+        {
+            report.outcome = AttemptOutcome::Ignored;
+            report.reason = "Practice mode is ignored in the settings";
+        }
+        else if (!isLegal())
+        {
+            report.outcome = AttemptOutcome::Ignored;
+            report.reason = getIllegalReason();
+        }
+        else
+        {
+            int res = GlobalStore::get()->checkRun(currentProfile->id, timePlayedForAttempt, &report);
+
+            // ! An achievement or the daily goal takes over the run sound
+            const auto unlocked = updateAchievements(*currentProfile);
+
+            if (!unlocked.empty())
+                GlobalStore::get()->updateProfile(*currentProfile);
+
+            const bool goalReached = checkDailyGoalReached();
+
+            if (!unlocked.empty() || goalReached)
+                playSfx(SfxKind::Achievement);
+            else if (res != -1)
+                playSfx(res ? SfxKind::Stage : SfxKind::Progress);
+        }
+
+        SessionStore::get()->add(std::move(report));
+    }
+
+    void destroyPlayer(
+        PlayerObject *player,
+        GameObject *obj)
+    {
+        PlayLayer::destroyPlayer(player, obj);
+
+        resetSpeedhackSamples();
+
+        if (!m_fields->firstIgnoredDamageObject)
+            m_fields->firstIgnoredDamageObject = obj;
+
+        if (
+            !m_fields->isNoclip &&
+            m_fields->firstIgnoredDamageObject != obj &&
+            !player->m_isDead &&
+            !m_levelEndAnimationStarted)
+        {
+            m_fields->isNoclip = true;
+        }
+
+        if (
+            !player->m_isDead ||
+            !m_fields->hasRespawned ||
+            m_level->isPlatformer())
+        {
+            return;
+        }
+
+        m_fields->hasRespawned = false;
+
+        m_fields->attEndTime =
+            this->timeForPos(
+                m_player1->getPosition(),
+                0,
+                0,
+                true,
+                0);
+
+        m_fields->attTo = this->getCurrentPercent();
+
+        GlobalStore::get()->setRunEnd(
+            this->getCurrentPercent());
+
+        checkRun();
+    }
+
+    void resetState()
+    {
+        m_fields->isNoclip = false;
+        m_fields->isSpeedhack = false;
+
+        m_fields->speedhackArmed = false;
+        m_fields->speedhackStartX = 0.f;
+
+        m_fields->firstIgnoredDamageObject = nullptr;
+
+        m_fields->attStartTime = 0.f;
+        m_fields->attEndTime = 0.f;
+        m_fields->attTo = 0.f;
+
+        resetSpeedhackSamples();
+
+        GlobalStore::get()->resetRun();
+    }
+
+    Profile *getProfileByName(const std::string &name)
+    {
+        for (auto &profile : m_fields->profiles)
+            if (profile.profileName == name)
+                return &profile;
+
+        return nullptr;
+    }
+
+    void prepareSpeedhackDetection()
+    {
+        m_fields->speedhackArmed = false;
+
+        m_fields->speedhackStartX =
+            m_player1
+                ? m_player1->getPositionX()
+                : 0.f;
+
+        resetSpeedhackSamples();
+    }
+
+    void resetSpeedhackSamples()
+    {
+        m_fields->speedhackLastFrame.reset();
+
+        m_fields->realDeltaHistory.clear();
+        m_fields->gameDeltaHistory.clear();
+
+        m_fields->realDeltaSum = 0.0;
+        m_fields->gameDeltaSum = 0.0;
+
+        m_fields->speedhackViolations = 0;
+    }
+
+    void checkSpeedhack(float gameDelta)
+    {
+        if (
+            m_fields->isSpeedhack ||
+            !m_player1 ||
+            m_player1->m_isDead ||
+            m_isPaused)
+        {
+            return;
+        }
+
+        const auto now =
+            std::chrono::steady_clock::now();
+
+        if (!m_fields->speedhackArmed)
+        {
+            constexpr float movementThreshold = 5.f;
+
+            const float movement =
+                std::abs(
+                    m_player1->getPositionX() -
+                    m_fields->speedhackStartX);
+
+            if (movement < movementThreshold)
+            {
+                m_fields->speedhackLastFrame = now;
+
+                return;
+            }
+
+            m_fields->speedhackArmed = true;
+
+            resetSpeedhackSamples();
+
+            m_fields->speedhackLastFrame = now;
+
+            log::debug(
+                "Speedhack detector armed "
+                "(movement: {:.2f})",
+                movement);
+
+            return;
+        }
+
+        if (!m_fields->speedhackLastFrame)
+        {
+            m_fields->speedhackLastFrame = now;
+            return;
+        }
+
+        const std::chrono::duration<double> elapsed =
+            now - *m_fields->speedhackLastFrame;
+
+        m_fields->speedhackLastFrame = now;
+
+        const double realDelta =
+            elapsed.count();
+
+        if (realDelta <= 0.0)
+        {
+            return;
+        }
+
+        if (realDelta > 0.2)
+        {
+            resetSpeedhackSamples();
+            m_fields->speedhackLastFrame = now;
+            return;
+        }
+
+        const double gameDt =
+            static_cast<double>(gameDelta);
+
+        m_fields->realDeltaHistory.push_back(realDelta);
+        m_fields->gameDeltaHistory.push_back(gameDt);
+
+        m_fields->realDeltaSum += realDelta;
+        m_fields->gameDeltaSum += gameDt;
+
+        constexpr std::size_t maxSamples = 30;
+        constexpr std::size_t minSamples = 12;
+
+        constexpr double softTolerance = 0.05;
+        constexpr double hardTolerance = 0.15;
+
+        constexpr int requiredViolations = 4;
+
+        if (
+            m_fields->realDeltaHistory.size() >
+            maxSamples)
+        {
+            m_fields->realDeltaSum -=
+                m_fields->realDeltaHistory.front();
+
+            m_fields->gameDeltaSum -=
+                m_fields->gameDeltaHistory.front();
+
+            m_fields->realDeltaHistory.pop_front();
+            m_fields->gameDeltaHistory.pop_front();
+        }
+
+        if (
+            m_fields->realDeltaHistory.size() <
+                minSamples ||
+            m_fields->realDeltaSum <= 0.0)
+        {
+            return;
+        }
+
+        const double actualTimeWarp =
+            m_fields->gameDeltaSum /
+            m_fields->realDeltaSum;
+
+        const double difference =
+            std::abs(
+                actualTimeWarp -
+                m_fields->expectedTimeWarp);
+
+        if (difference > hardTolerance)
+        {
+            m_fields->speedhackViolations += 2;
+        }
+        else if (difference > softTolerance)
+        {
+            ++m_fields->speedhackViolations;
+        }
+        else
+        {
+            m_fields->speedhackViolations = 0;
+        }
+
+        if (m_fields->speedhackViolations > 0)
+        {
+            log::debug(
+                "Speedhack violation {}/{} "
+                "(actual: {:.3f}, expected: {:.3f}, diff: {:.3f})",
+                m_fields->speedhackViolations,
+                requiredViolations,
+                actualTimeWarp,
+                m_fields->expectedTimeWarp,
+                difference);
+        }
+
+        if (
+            m_fields->speedhackViolations >=
+            requiredViolations)
+        {
+            m_fields->isSpeedhack = true;
+
+            log::warn(
+                "Speedhack detected "
+                "(actual: {:.3f}, expected: {:.3f}, diff: {:.3f})",
+                actualTimeWarp,
+                m_fields->expectedTimeWarp,
+                difference);
+
+            return;
+        }
+    }
+
+    // Why isLegal() is false, for the session log
+    std::string getIllegalReason()
+    {
+        if (m_fields->isNoclip)
+            return "Noclip was detected, the attempt is not counted";
+
+        if (m_fields->isSpeedhack)
+            return "Speedhack was detected, the attempt is not counted";
+
+        if (m_isIgnoreDamageEnabled || m_ignoreDamage)
+            return "Damage was ignored (safe mode or a hack), the attempt is not counted";
+
+        return "The attempt is not legal";
+    }
+
+    bool isLegal()
+    {
+        const bool speedhackDetectionEnabled =
+            Mod::get()->getSettingValue<bool>(
+                "enable-speedhack-detection");
+
+        return !m_fields->isNoclip &&
+               (!speedhackDetectionEnabled ||
+                !m_fields->isSpeedhack) &&
+               !m_isIgnoreDamageEnabled &&
+               !m_ignoreDamage;
+    }
+};

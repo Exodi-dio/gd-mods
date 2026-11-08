@@ -1,0 +1,81 @@
+#ifndef RATINGSMANAGER_H
+#define RATINGSMANAGER_H
+
+#include <map>
+#include <Geode/Geode.hpp>
+#include <objects/IRatingObserver.h>
+#include <objects/RatingsSpread.h>
+#include <objects/Skillsets.h>
+
+#include "objects/GDDLRating.h"
+#include "objects/Submission.h"
+
+using namespace geode::prelude;
+
+class RatingsManager {
+    static std::map<int, GDDLRating> demonMap;
+    static std::map<int, int> ratingsCache;
+    inline static std::map<int, RatingsSpread> spreadsCache{};
+    inline static std::map<int, Skillsets> skillsetsCache{};
+    inline static std::map<int, Submission> submissionsCache{};
+    inline static int cacheTimestamp = 0;
+    inline static std::string cachedListPath = Mod::get()->getSaveDir().string() + "/gddlcache.json";
+    inline static std::set<IRatingObserver*> ratingObservers{};
+
+    static GDDLRating parseJson(const std::string& response);
+public:
+    inline static std::string gddlSheetUrl = "https://docs.google.com/spreadsheets/d/1qKlWKpDkOpU1ZF6V6xGfutDY2NvcA8MNPnsv6GBkKPQ/gviz/tq?tqx=out:csv&sheet=GDDL";
+    inline static bool readCache = false;
+    inline static bool triedToDownloadCache = false;
+
+    static void populateFromSave(bool forceLoad = false);
+
+    static int getDemonTier(int id);
+
+    static cocos2d::ccColor3B getTierColor(int tier);
+
+    static std::optional<GDDLRating> getRating(int id);
+
+    static std::string getRequestUrl(int id);
+
+    static bool addRatingFromResponse(int id, const std::string &response);
+
+    static void cacheRatings(const std::string &response);
+
+    static std::map<int, int> getTierStats();
+
+    static bool cacheEmpty();
+
+    static void updateCacheFromSearch(int levelID, const float rating);
+
+    static int getCachedTier(int levelID);
+
+    static void cacheList(bool onQuit);
+
+    static void cacheSpread(const int levelID, const RatingsSpread& spread);
+
+    static bool hasSpread(const int levelID);
+
+    static RatingsSpread getSpread(const int levelID);
+
+    static void cacheSkillsets(const int levelID, const Skillsets& skillsets);
+
+    static bool hasSkillsets(const int levelID);
+
+    static Skillsets getSkillsets(const int levelID);
+
+    static void cacheSubmission(const int levelID, const Submission& submission);
+
+    static bool hasSubmission(const int levelID);
+
+    static Submission getSubmission(const int levelID);
+
+    static void clearSubmissionCache();
+
+    static void subscribeToObservers(IRatingObserver* newSubscriber);
+
+    static void unsubscribeFromObservers(IRatingObserver* unsubscribing);
+};
+
+
+#endif // RATINGSMANAGER_H

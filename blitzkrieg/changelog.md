@@ -1,0 +1,251 @@
+# v2.3.5
+- Added a popup to choose which profiles and data fields to include when exporting profile backups, instead of always exporting everything raw
+- Improved News card layout to support dynamic height and multi-line descriptions
+- Fixed stage progression counter showing one stage behind
+
+# v2.3.4
+- Fixed incorrect run assignment when multiple ranges overlap.
+- Runs now always assign stats and PASS to the same target range.
+- Improved fallback selection when no unchecked range can be completed.
+- Fixed repeated PASS counting for already completed ranges.
+
+# 2.3.3
+- Fixed a memory lifetime issue in StageRangeCell that could cause crashes when toggling ranges
+- Improved cleanup and recreation of Stage Browser UI elements
+
+# 2.3.2
+- Fixed an edge case where valid runs could be assigned to an earlier overlapping range that the run could not complete
+- Run assignment now prioritizes an unchecked overlapping range that the current attempt can actually pass
+
+# 2.3.1
+- Replaced platform-specific time formatting with Geode time utilities and `fmt::format`
+- Cleaned up backup filename time formatting
+
+# 2.3.0
+- Reworked run assignment so each attempt is tracked by exactly one target range
+- Improved run completion checks and floating-point comparison handling
+- Improved attempts, playtime, best run, and completion tracking
+- Reworked range statistics and status display in the Stage Browser
+- Added movement-aware speedhack detection to prevent manipulated runs from being counted
+- Added an option to disable speedhack detection
+- Reduced News refresh cache from 5 minutes to 1 minute
+- Updated Geode compatibility to 5.10.1
+
+# 2.2.5
+- Added a News tab for StartPos publications, mod updates, announcements, and warnings
+- Added news action buttons for opening levels, opening links, and copying text
+- Added news caching for offline use and temporary API failures
+- Improved run statistics layout, labels, and pluralization
+- Improved profile loading stability
+
+# 2.2.4
+- Fixed invisible StartPos page buttons remaining active after leaving the page
+- Fixed a crash when exiting the game after visiting the High-Quality Start Positions page
+- Fixed potential crashes when search results contain fewer than two levels
+- Fixed a memory leak when reloading the StartPos levels list
+
+# 2.2.3
+- Reduced lag spikes after deaths by saving profiles separately
+- Added automatic migration from the legacy profile storage format
+- Improved profile loading and data validation
+- Improved profile import and persistence logic
+- Updated Geode to 5.8.2
+
+# 2.2.2
+- Updated StartPos recommendation value to 8
+- Added best run line visualization in StageRangeCell
+- Fixed input focus issue when exiting layers by defocusing the search bar
+- Improved About section and refined various UI elements
+- Updated about.md content
+- Removed leftover debug logging from StartPosLayer
+- Minor internal refactors and cleanup
+- Update geode to 5.7.1
+
+# 2.2.1
+- Fixed Stage Browser issues for fully completed profiles
+- Fixed incorrect initial stats (Attempts / Time Played)
+- Fixed stage selection fallback (now opens on final stage)
+- Fixed missing navigation arrows
+- Improved logic for profiles without unchecked stages
+- Minor improvements and fixes
+- Thanks to [**jordiedh**](https://github.com/jordiedh) for the contribution
+
+# 2.2.0
+- Added the ability to sort and filter runs in the stage browser
+- Added the ability to switch to the startpos version from the original level layer
+- Added a visual progress line under each run for better visual perception
+- Added the Stage Graph showing playtime and number of attempts per stage
+- Added keybinds for stage switching (A <-, D ->, Q <-, E ->)
+- Added a list of starting positions for Nayloren's team copies (High-Quality Start Positions)
+- Added a streamer mode that hides profile names, leaving only one letter
+- General code improvements and cleanup
+- General stability improvements
+- Added GitHub source metadata
+- Removed the ability to save removed startposes in profiles
+
+# 2.1.0
+- Replaced the practice bar with the Blitzkrieg progression system
+- If a profile is attached to a level, the stage browser now opens by default
+- Added the ability to adjust the SFX volume ratio
+
+# 2.0.1
+- Fixed a bug where the player had already completed a level, but on the way to the portal there was a hitbox that he was clinging to, and safe mode identified this as a no-clip and did not count runs to 100%. Example levels: "Poocubed, Cat Planet"
+
+# 2.0.0
+- Ability to change every percentage in the Create/Edit Profile popups
+- Fixed a bug with 0 as the start position
+- Small UI improvements for `CreateProfilePopup`
+- Added border animation when switching between percentages
+- 2.1 percentages are now selected by default in `CreateProfilePopup`
+
+# 2.0.0-beta.2
+- Added Discord webhook notifications when closing runs in a profile
+- Ability to enable or disable Discord notifications
+- Ability to configure a Discord webhook per profile
+
+# 2.0.0-beta.1
+- Ability to change profile name
+- Ability to create profiles with specific percentages
+- Ability to edit profiles with specific percentages
+- Warning when creating a profile with fewer than 6 start positions
+- Blitzkrieg button at the end of a level
+- Added error popups for profile import errors
+- Additional utilities, including `getMetaInfoFromStages`
+- Added a Settings button to the Create Profile popup
+- Updated the mod logo
+- Updated Geode to version 5.0.3
+- Renamed "Profiles List" tab to "Profiles"
+- Renamed "Current Stage" tab to "Stage Browser"
+- Updated unchecked stage handling in `StagesList` to prevent incorrect stage displaying
+- Refactored utils and removed `getProfileStats`
+- Fixed stage displaying issues
+- Fixed a bug where the next stage would not unlock even when all progresses were completed
+- Fixed crashes when switching between the Profiles tab and the Stage Browser
+- Fixed a bug where custom SFX sounds were cut off due to their length
+- Various crashes
+
+# 1.6.5
+- Added node-ids dependency
+- Autofill profile name with level name
+
+# 1.6.4
+- Fixed a crash caused by an event listener not being properly cleaned up
+- Fixed a bug with the calculation of the scroll height for the progress list in the "Current Stage" section
+- Update geode v5.0.1
+
+# 1.6.3
+- Update to stable geode v5
+
+# 1.6.2
+- Fixed negative number of attempts
+- Increase the hook priority for destroyPlayer to fix the issue in safe mode
+
+# 1.6.1
+- Fixed crashes caused by level IDs.
+
+# 1.6.0
+- Migrate to geode v5 beta
+
+# 1.5.9
+- Mark the stage as completed when all progresses are checked
+
+# 1.5.8
+- Added total stage playtime & attempts
+
+# v1.5.7
+- Added playtime tracking for each individual progress
+- Added safeguard: automatic early data save to prevent total progress loss in case of a crash
+
+# v1.5.6
+- Fixed switching between stages
+- Fixed switching progress of previous stages
+
+# v1.5.5
+Features:
+- Added ability to pin and bind profile in "Create Profile" popup
+- Shows the number of attempts for the first completion
+
+Improvements/Fixes:
+- Now the new profile will be created on top of the list
+- When progress is marked as not closed, 1 completion is removed, 1 attempt is decremented and the first run is reset
+- Fixed bug when deleted profiles visible again after restarting the game
+
+# v1.5.4
+- Fixed issues with auto-switching stages
+
+# v1.5.3
+- Fixed an issue where the profile was not saved correctly after an attempt in the game
+
+# v1.5.2
+- Fixed incorrect progress checking
+
+# v1.5.1
+- Fixed incorrect completions counting
+
+# v1.5.0
+- Improved dispaly of percentages in the "Create Profile" popup
+- Improved display of decimals in the stage progresses
+- Every stage progress now shows run statistics (first run, best run, completions, attempts)
+
+# v1.4.2
+- Ability to load custom SFX sounds
+- Option to disable tracking in practice mode
+- Four visual states for **RangeCell**: *default*, *completed*, *current*, *disabled*
+
+# v1.4.1
+- Fixed incorrect display of the profile connection button
+
+# v1.4.0
+- Added the ability to add profiles to favorites (pinned profiles)
+- Implemented manual reordering of profiles
+- Added a confirmation modal when deleting a profile
+
+# v1.3.4
+- Optimization
+- The game no longer crashes when the user opens the "Current Stage" tab at a level without an attached profile.
+
+# v1.3.3
+- Added the ability to switch between stages as in pages
+
+# v1.3.2
+- Fixed incorrect marking of runs
+
+# v1.3.1
+- Added website link
+- Added Discord community link
+
+# v1.3.0
+- Profile creation using the automatic start position finder
+- Profile deletion support
+- Redesigned interface
+
+# v1.2.0
+- Added notes to stage ranges
+- Updated the font for ranges
+- Increased cell sizes
+- Display current stage ranges in 2 columns
+- Display current stage number and total number of stages
+
+# v1.1.6
+- Fixed import error
+
+# v1.1.5
+- Refactor
+
+# v1.1.4
+- Fixed an issue where stage progress checkmarks were not being saved
+- Improved profiles list interface for a smoother experience
+
+# v1.1.3
+- Added the ability to mark progress in the stage tab
+
+# v1.1.2
+- Added background to tab buttons
+
+# v1.1.1
+- Added `about.md` (mod description for Geode Manager)
+- Added `changelog.md` (contains a tutorial)
+- Added `support.md`
+
+# v1.1.0
+- Added a list of progresses in the pause menu to see which progresses are already closed and which are in progress
