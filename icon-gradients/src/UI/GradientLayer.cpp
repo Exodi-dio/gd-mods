@@ -594,7 +594,7 @@ bool GradientLayer::scrollWheel(float y, float) {
     
     m_scroll = m_smoothScroll ? m_scroll + y : y;
     
-    if (m_scroll < 12 && m_scroll > -12 && m_smoothScroll) return;
+    if (m_scroll < 12 && m_scroll > -12 && m_smoothScroll) return true;
     
     int index = 0;
 
