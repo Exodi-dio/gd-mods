@@ -1,0 +1,79 @@
+{
+    "geode": "6.0.0-alpha.1",
+    "gd": {
+        "win": "2.2091",
+        "android": "2.2091",
+        "mac": "2.2081"
+    },
+    "id": "zilko.death_animations",
+    "name": "Death Animations",
+    "version": "v1.1.4",
+    "developer": "Zilko",
+    "description": "it animates ur deaths",
+    "links": {
+      "source": "https://github.com/Zilko/death-animations",
+      "community": "https://discord.gg/w6yvdzVzBd"
+    },
+    "tags": [
+  		"enhancement",
+  		"utility",
+  		"customization",
+  		"gameplay",
+  		"offline",
+  		"content"
+  	],
+    "dependencies": {
+  		"geode.node-ids": ">=1.23.1",
+        "hiimjustin000.more_icons": {
+            "version": ">=2.1.0",
+            "required": false
+        }
+    },
+    "resources": {
+        "spritesheets": {
+            "poof-particle": [
+                "resources/sprites/animations/poof/*.png"
+            ]
+        },
+        "sprites": [
+            "resources/sprites/ui/*.png",
+            "resources/sprites/ui/thumbnails/*.png",
+            "resources/sprites/animations/jumpscare/*.png",
+            "resources/sprites/animations/you-died/*.png",
+            "resources/sprites/animations/wii/*.png"
+        ],
+        "files": [
+            "resources/sounds/*.mp3",
+            "resources/sounds/*.ogg",
+            "resources/sounds/*.wav",
+            "resources/sounds/*.opus",
+            "resources/fonts/*/*.fnt",
+            "resources/fonts/*/*.png",
+            "resources/sprites/animations/wii/high-quality/*.png",
+            "resources/sprites/animations/among-us/*.png",
+            "resources/sprites/animations/to-be-continued/*.png",
+            "resources/sprites/animations/wasted/*.png",
+            "resources/sprites/animations/minecraft/*.png",
+            "resources/sprites/animations/mr-hippo/*.png",
+            "resources/sprites/animations/bsod/*.png",
+            "resources/sprites/animations/speech-bubble/*.png",
+            "resources/sprites/animations/celeste/*.png",
+            "resources/sprites/animations/maro/*.png",
+            "resources/sprites/animations/undertale/*.png",
+            "resources/sprites/animations/celeste/spritesheets/*.png",
+            "resources/sprites/animations/celeste/spritesheets/*.plist",
+            "resources/sprites/animations/undertale/spritesheets/*.png",
+            "resources/sprites/animations/undertale/spritesheets/*.plist",
+            "resources/sprites/animations/among-us/spritesheets/*.plist",
+            "resources/sprites/animations/among-us/spritesheets/*.png",
+            "resources/sprites/animations/blood/spritesheets/*.plist",
+            "resources/sprites/animations/blood/spritesheets/*.png"
+        ],
+        "fonts": {
+          "terraria": {
+              "path": "resources/fonts/terraria.ttf",
+              "size": 80
+          }
+        }
+    }
+}

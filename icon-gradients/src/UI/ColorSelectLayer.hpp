@@ -1,0 +1,21 @@
+#include "Includes.hpp"
+
+class GradientLayer;
+
+class ColorSelectLayer : public Popup {
+
+private:
+
+    GradientLayer* m_layer = nullptr;
+
+    bool init() override;
+
+    void createButton(int, const CCPoint&);
+
+    void onColor(CCObject*);
+
+public:
+
+    static ColorSelectLayer* create(GradientLayer*);
+
+};

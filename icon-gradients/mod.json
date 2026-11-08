@@ -1,0 +1,136 @@
+{
+	"geode": "6.0.0-alpha.1",
+	"gd": {
+		"win": "2.2091",
+		"android": "2.2091",
+		"mac": "2.2081",
+		"ios": "2.2081"
+	},
+	"id": "zilko.icon_gradients",
+	"name": "Icon Gradients",
+	"version": "v1.3.11",
+	"developer": "Zilko",
+	"description": "Allows u to gradient ur icons.",
+	"links": {
+		"source": "https://github.com/ZiLko/icon-gradients",
+		"community": "https://discord.gg/w6yvdzVzBd"
+	},
+	"tags": [
+		"customization",
+		"enhancement",
+		"gameplay",
+		"interface",
+		"offline",
+		"utility"
+	],
+	"dependencies": {
+		"geode.node-ids": ">=1.23.1"
+	},
+	"resources": {
+        "files": [
+            "resources/shaders/*.fsh",
+            "resources/shaders/*.vert"
+        ],
+		"sprites": [
+			"resources/sprites/*.png"
+		]
+    },
+	"settings": {
+		"mod-title": {
+			"name": "Mod",
+			"type": "title"
+		},
+		"disabled": {
+			"name": "Disable",
+			"description": "Disables gradients everywhere.",
+			"type": "bool",
+			"default": false
+		},
+		"gameplay-title": {
+			"name": "Gameplay",
+			"type": "title"
+		},
+		"flip-2p":{
+			"name": "Flip Second Player Colors",
+			"description": "Flip colors for second player like vanilla gd does.",
+			"type": "bool",
+			"default": true,
+			"enable-if": "!separate-2p && !disable-2p"
+		},
+		"separate-2p":{
+			"name": "Separate Second Player Gradient",
+			"description": "Makes the second player use a separate set of gradients.",
+			"type": "bool",
+			"default": false,
+			"enable-if": "!disable-2p"
+		},
+		"disable-2p":{
+			"name": "Disable Second Player Gradient",
+			"description": "Makes second player not have gradient.",
+			"type": "bool",
+			"default": false
+		},
+		"menu-gradients":{
+			"name": "Gradients in Menu",
+			"description": "Makes players in the main menu have your gradients.",
+			"type": "bool",
+			"default": false
+		},
+		"interface-title": {
+			"name": "Interface",
+			"type": "title"
+		},
+		"hide-on-move": {
+			"name": "Hide Points on Move",
+			"description": "Hides all points when moving one",
+			"type": "bool",
+			"default": true
+		},
+		"point-opacity": {
+			"name": "Point Opacity",
+			"description": "The opacity the points will be when not hidden (0 - 255).",
+			"type": "int",
+			"default": 255,
+			"min": 0,
+			"max": 255
+		},
+		"point-scale": {
+			"name": "Point Scale",
+			"description": "The scale the points will have.",
+			"type": "float",
+			"default": 1.0,
+			"min": 0.01,
+			"max": 3
+		},
+		"disable-keys": {
+			"name": "Disable Keyboard Shortcuts",
+			"description": "Disables Keyboard Shortcuts exploding head",
+			"type": "bool",
+			"default": false
+		},
+		"move-step": {
+		  "name": "Move step length",
+			"description": "How much the points are going to move then using arrow keys.",
+			"type": "float",
+			"default": 1.0,
+			"max": 50.0,
+			"min": 0.001,
+			"platforms": ["win", "mac"]
+		},
+		"misc-title": {
+			"name": "Miscellaneous",
+			"type": "title"
+		},
+		"preload-shaders": {
+			"name": "Preload Shaders",
+			"description": "Preloads shaders on game open to prevent lagspikes mid gameplay.",
+			"type": "bool",
+			"default": true
+		},
+		"increase-tolerance": {
+			"name": "Increase Line Shader Tolerance",
+			"type": "bool",
+			"default": false
+		}
+	}
+}

@@ -1,0 +1,58 @@
+#include "BaseAnimation.hpp"
+
+class ToBeContinued : public BaseAnimation {
+
+private:
+
+    inline static const std::string m_shader = R"(
+        #ifdef GL_ES
+        precision mediump float;
+        #endif
+        
+        varying vec2 v_texCoord;
+        uniform sampler2D u_texture;
+        
+        vec3 applyYellowTint(vec3 color) {
+            float gray = dot(color, vec3(0.299, 0.587, 0.114));
+            vec3 yellow = vec3(1.0, 0.9, 0.4);
+            return gray * yellow;
+        }
+        
+        void main() {
+            vec4 texColor = texture2D(u_texture, v_texCoord);
+            vec3 tinted = applyYellowTint(texColor.rgb);
+            vec3 finalColor = tinted * 1.1;
+            gl_FragColor = vec4(finalColor, texColor.a);
+        }
+    )";
+        
+    ANIMATION_CTOR_CREATE(ToBeContinued) {}
+    
+public:
+
+    void start() override {
+        CCSprite* freezeSprite = CCSprite::createWithTexture(Utils::takeScreenshot());
+        freezeSprite->setFlipY(true);
+        freezeSprite->setScale(m_size.width / freezeSprite->getContentWidth());
+        freezeSprite->setAnchorPoint({0, 0});
+        freezeSprite->setBlendFunc(ccBlendFunc{GL_ONE, GL_ZERO});
+        
+        if (Utils::getSettingBool(Anim::ToBeContinued, "yellow-shader"))
+            freezeSprite->setShaderProgram(Utils::createShader(m_shader, true));
+        
+        addChild(freezeSprite);
+        
+        Utils::playSound(Anim::ToBeContinued, "roundabout.mp3", m_speed, 0.7f);
+        
+        CCSprite* spr = CCSprite::create("to-be-continued.png"_spr);
+        spr->setScale(2.66666f);
+        spr->setPosition({m_size.width, 16});
+        spr->setAnchorPoint({0, 0});
+        spr->runAction(CCMoveTo::create(0.07f, {16, 16}));
+
+        Utils::fixScaleTextureSizexd(spr);
+        
+        addChild(spr);
+    }
+    
+};

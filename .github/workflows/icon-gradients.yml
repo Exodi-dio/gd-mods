@@ -1,0 +1,47 @@
+name: Build Icon Gradients
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    tags: [ "icon-gradients-v*" ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [Android32, Android64]
+        include:
+          - target: Android32
+            os: ubuntu-latest
+          - target: Android64
+            os: ubuntu-latest
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Icon Gradients
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          sdk: "nightly"
+          bindings: "Exodi-dio/bindings"
+          bindings-ref: "main"
+          path: icon-gradients
+          target: ${{ matrix.target }}
+          build-config: Release
+          combine: true
+
+  package:
+    name: Package Icon Gradients
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: geode-sdk/build-geode-mod/combine@main
+        id: build
+      - name: Upload merged geode
+        uses: actions/upload-artifact@v4
+        with:
+          name: icon-gradients-geode
+          path: ${{ steps.build.outputs.build-output }}/*.geode

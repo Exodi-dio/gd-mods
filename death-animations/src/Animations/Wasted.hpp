@@ -1,0 +1,360 @@
+#include "BaseAnimation.hpp"
+
+#include "Other/Variables.hpp"
+
+class Wasted : public BaseAnimation {
+
+private:
+
+    inline static const std::string m_shader = R"(
+        #ifdef GL_ES
+        precision mediump float;
+        #endif
+
+        varying vec2 v_texCoord;
+        uniform sampler2D u_texture;
+        uniform float u_time;
+        uniform int u_secondPart;
+
+        float flashyFlash(float t) {
+            return t < 0.1 ? 10.0 : 10.0 * (1.0 - min((t - 0.1) / 0.5, 1.0));
+        }
+
+        void main() {
+            vec2 texelSize = vec2(1.0 / 1920.0, 1.0 / 1080.0);
+            float amount = 0.5;
+
+            float maxOffset = 0.0;
+
+            if (u_time >= 2.2)
+                maxOffset = max(maxOffset, flashyFlash(u_time - 2.2));   
+            else
+                maxOffset = max(maxOffset, flashyFlash(u_time));
+
+            float offset = maxOffset * amount;
+            vec2 o = texelSize * offset;
+
+            vec4 sum = vec4(0.0);
+            sum += texture2D(u_texture, v_texCoord + vec2(-o.x, -o.y));
+            sum += texture2D(u_texture, v_texCoord + vec2( 0.0, -o.y));
+            sum += texture2D(u_texture, v_texCoord + vec2( o.x, -o.y));
+            sum += texture2D(u_texture, v_texCoord + vec2(-o.x,  0.0));
+            sum += texture2D(u_texture, v_texCoord + vec2( 0.0,  0.0));
+            sum += texture2D(u_texture, v_texCoord + vec2( o.x,  0.0));
+            sum += texture2D(u_texture, v_texCoord + vec2(-o.x,  o.y));
+            sum += texture2D(u_texture, v_texCoord + vec2( 0.0,  o.y));
+            sum += texture2D(u_texture, v_texCoord + vec2( o.x,  o.y));
+            vec4 color = sum / 9.0;
+
+            float holdTime = 0.6;
+            float fadeOutDuration = 4.0;
+            float fadeInDuration = 0.15;
+
+            float t = u_time;
+            float effectStrength = 1.0;
+
+            if (t < holdTime) {
+                effectStrength = 1.0;
+            } else if (t < holdTime + fadeOutDuration && t < 2.22) {
+                float progress = (t - holdTime) / fadeOutDuration;
+                effectStrength = 1.0 - progress;
+            } else if (t >= 2.22) {
+                effectStrength = 1.0;
+            }
+
+            float contrast = mix(1.0, 5.0 - min(u_time / 0.6, 1.0) * 2.0, effectStrength);
+            vec3 boosted = (color.rgb - 0.5) * contrast + 0.5;
+            boosted = mix(boosted * 0.5, boosted, smoothstep(0.4, 1.0, boosted));
+
+            color.rgb = mix(color.rgb, boosted, effectStrength);
+
+            vec3 saturated = u_time < 0.1
+                ? mix(vec3(dot(color.rgb, vec3(0.2126, 0.7152, 0.4))), color.rgb, 0.3 - min(u_time / 0.1, 1.0) * 0.1)
+                : mix(color.rgb, vec3(dot(color.rgb, vec3(0.299, 0.587, 0.4))), 0.7 + min(u_time / 1.85, 1.0) * 0.3);
+
+            vec2 uv = v_texCoord * 2.0 - 1.0;
+            float vignette = 1.0 - dot(uv, uv) * 0.3;
+            vignette = clamp(vignette, 0.6, 1.0);
+
+            vec3 finalColor = saturated * vignette;
+
+            gl_FragColor = vec4(finalColor, color.a);
+        }
+    )";
+
+    CCGLProgram* m_program = nullptr;
+
+    std::shared_ptr<RenderTexture::Sprite> m_renderTexture = nullptr;
+
+    CCSprite* m_frameSprite = nullptr;
+    CCSprite* m_wastedSprite = nullptr;
+
+    CCNode* m_wastedContainer = nullptr;
+    
+    Ref<CCNode> m_explosionSprite = nullptr;
+
+    float m_time = 0.f;
+
+    void update(float dt) override {
+        if (m_frameSprite) m_frameSprite->setVisible(false);
+        if (m_wastedContainer) m_wastedContainer->setVisible(false);
+        if (m_isPreview) m_delegate->getBackButton()->setVisible(false);
+        
+        Utils::takeScreenshot(m_renderTexture);
+
+        if (m_frameSprite) m_frameSprite->setVisible(true);
+        if (m_wastedContainer) m_wastedContainer->setVisible(true);
+        if (m_isPreview) m_delegate->getBackButton()->setVisible(true);
+    
+        m_time += dt;
+
+        if (m_explosionSprite && static_cast<CCNodeRGBA*>(m_explosionSprite.data())->getOpacity() < 50)
+            m_explosionSprite = nullptr;
+
+        m_program->use();
+        m_program->setUniformLocationWith1f(glGetUniformLocation(m_program->getProgram(), "u_time"), m_time / m_speed);
+    }
+
+    void addWasted(float) {
+        m_wastedContainer = CCNode::create();
+        addChild(m_wastedContainer);
+
+        CCSprite* spr = CCSprite::create("wasted-banner-half.png"_spr);
+        spr->setScale(m_size.width / spr->getContentWidth());
+        spr->setPosition(m_size / 2.f - ccp(0, 4));
+        spr->setAnchorPoint({0.5f, 0});
+        spr->setOpacity(100);
+
+        m_wastedContainer->addChild(spr);
+
+        spr = CCSprite::create("wasted-banner-half.png"_spr);
+        spr->setScale(m_size.width / spr->getContentWidth());
+        spr->setPosition(m_size / 2.f - ccp(0, 4));
+        spr->setFlipY(true);
+        spr->setAnchorPoint({0.5f, 1});
+        spr->setOpacity(100);
+
+        m_wastedContainer->addChild(spr);
+
+        m_wastedSprite = CCSprite::create("wasted.png"_spr);
+        m_wastedSprite->setColor({187, 57, 57});
+        m_wastedSprite->setOpacity(230);
+        m_wastedSprite->setScale(1.06f);
+        m_wastedSprite->setPosition(m_size / 2.f - ccp(0, 2));
+
+        Utils::fixScaleTextureSizexd(m_wastedSprite);
+
+        m_wastedContainer->addChild(m_wastedSprite);
+        m_wastedContainer->setPositionY(8);
+    }
+
+    void startFadeOut(float) {
+        CCLayerColor* layer = CCLayerColor::create({0, 0, 0, 255});
+        layer->setOpacity(0);
+        layer->runAction(CCFadeIn::create(2.5f / m_speed));
+     
+        addChild(layer, 10);
+
+        m_wastedSprite->runAction(CCFadeTo::create(2.5f / m_speed, 0));
+    }
+
+    void toggleHooks(bool toggled) {
+        Utils::setHookEnabled("cocos2d::CCParticleSystem::update", toggled);
+        Utils::setHookEnabled("CCCircleWave::updateTweenAction", toggled);
+        Utils::setHookEnabled("GJBaseGameLayer::update", toggled);
+        Utils::setHookEnabled("ExplodeItemNode::update", toggled);
+    }
+
+    void onAnimationEnd() override {
+        BaseAnimation::onAnimationEnd();
+
+        toggleHooks(false);
+    }
+
+    ~Wasted() {
+        if (m_program)
+            m_program->release();
+
+        Variables::setSpeed(1.f);
+
+        Utils::setHookEnabled("cocos2d::CCAnimation::createWithSpriteFrames", false);
+        Utils::setHookEnabled("cocos2d::CCFadeOut::create", false);
+
+        toggleHooks(false);
+    }
+
+    ANIMATION_CTOR_CREATE(Wasted) {}
+    
+public:
+
+    void startEarly() override {
+        Variables::setSpeed(0.07f * m_speed);
+
+        Utils::setHookEnabled("cocos2d::CCAnimation::createWithSpriteFrames", true);
+        Utils::setHookEnabled("cocos2d::CCFadeOut::create", true);
+    }
+
+    void start() override {
+        Variables::setSpeed(0.025f * m_speed);
+
+        if (m_isPreview)
+            m_delegate->setBackgroundOpacity(55);
+
+        Utils::setHookEnabled("cocos2d::CCAnimation::createWithSpriteFrames", false);
+        Utils::setHookEnabled("cocos2d::CCFadeOut::create", false);
+        Utils::playSound(Anim::Wasted, "wasted.wav", m_speed, 1.f);
+        Utils::setHighestZ(this);
+
+        toggleHooks(true);
+
+        if (!m_isPreview && GameManager::get()->getPlayerDeathEffect() > 1)
+            m_explosionSprite = m_playLayer->m_player1->m_parentLayer->getChildByType<CCSprite>(-1);
+
+        m_program = Utils::createShader(m_shader, false);
+
+        auto director = CCDirector::get();
+
+        m_renderTexture = RenderTexture(director->getWinSizeInPixels().width, director->getWinSizeInPixels().height).intoManagedSprite();
+
+        update(0.f);
+
+        m_frameSprite = CCSprite::createWithTexture(m_renderTexture->sprite->getTexture());
+        m_frameSprite->setFlipY(true);
+        m_frameSprite->setPosition(m_size / 2.f);
+        m_frameSprite->setBlendFunc(ccBlendFunc{GL_ONE, GL_ZERO});
+        m_frameSprite->setShaderProgram(m_program);
+
+        addChild(m_frameSprite);
+
+        CCSprite* copy = CCSprite::createWithTexture(m_renderTexture->sprite->getTexture());
+        copy->setAnchorPoint({0, 1});
+        copy->setBlendFunc(ccBlendFunc{GL_ONE, GL_ZERO});
+        copy->setShaderProgram(m_program);
+
+        m_frameSprite->addChild(copy);
+
+        copy = CCSprite::createWithTexture(m_renderTexture->sprite->getTexture());
+        copy->setPosition({0, m_size.height});
+        copy->setAnchorPoint({0, 0});
+        copy->setBlendFunc(ccBlendFunc{GL_ONE, GL_ZERO});
+        copy->setShaderProgram(m_program);
+
+        m_frameSprite->addChild(copy);
+
+        copy = CCSprite::createWithTexture(m_renderTexture->sprite->getTexture());
+        copy->setFlipY(true);
+        copy->setFlipX(true);
+        copy->setAnchorPoint({1, 0});
+        copy->setBlendFunc(ccBlendFunc{GL_ONE, GL_ZERO});
+        copy->setShaderProgram(m_program);
+
+        m_frameSprite->addChild(copy);
+
+        copy = CCSprite::createWithTexture(m_renderTexture->sprite->getTexture());
+        copy->setFlipY(true);
+        copy->setFlipX(true);
+        copy->setPosition({m_size.width, 0});
+        copy->setAnchorPoint({0, 0});
+        copy->setBlendFunc(ccBlendFunc{GL_ONE, GL_ZERO});
+        copy->setShaderProgram(m_program);
+
+        m_frameSprite->addChild(copy);
+
+        schedule(schedule_selector(Wasted::update));
+
+        CCPoint pos = m_frameSprite->getPosition();
+
+        scheduleOnce(schedule_selector(Wasted::addWasted), 2.17f / m_speed);
+        scheduleOnce(schedule_selector(Wasted::startFadeOut), 5.2f / m_speed);
+
+        m_frameSprite->runAction(
+            CCSpawn::create(
+                CCSequence::create(
+                    CCEaseSineOut::create(CCScaleTo::create(0.25f / m_speed, 1.12f)),
+                    CCEaseSineInOut::create(CCScaleTo::create(0.2f / m_speed, 1.115f)),
+                    CCEaseSineInOut::create(CCScaleTo::create(1.72f / m_speed, 1.13f)),
+                    CCEaseSineInOut::create(CCScaleTo::create(0.03f / m_speed, 1.12f)),
+                    CCEaseSineInOut::create(CCScaleTo::create(7.f / m_speed, 1.f)),
+                    nullptr
+                ),
+                CCSequence::create(
+                    CCDelayTime::create(0.05f / m_speed),
+                    CCEaseSineInOut::create(CCRotateBy::create(2.12f / m_speed, 5.02857f)),
+                    CCRotateBy::create(0.f, 5),
+                    CCDelayTime::create(0.5f / m_speed),
+                    CCEaseSineInOut::create(CCRotateBy::create(4.f / m_speed, -5.02857f)),
+                    nullptr
+                ),
+                CCSequence::create(
+                    CCDelayTime::create(0.05f / m_speed),
+                    CCEaseSineOut::create(CCMoveTo::create(1.8f / m_speed, pos - ccp(10, -8))),
+                    nullptr
+                ),
+                CCSequence::create(
+                    CCDelayTime::create(0.3f / m_speed),
+                    CCEaseSineOut::create(CCMoveTo::create(2.4f / m_speed, pos - ccp(3, -8))),
+                    nullptr
+                ),
+                CCSequence::create(
+                    CCDelayTime::create(0.5f / m_speed),
+                    CCEaseSineInOut::create(CCMoveTo::create(2.4f / m_speed, pos - ccp(7, 23))),
+                    nullptr
+                ),
+                CCSequence::create(
+                    CCDelayTime::create(1.5f / m_speed),
+                    CCEaseSineInOut::create(CCMoveBy::create(2.4f / m_speed, ccp(13, -5))),
+                    nullptr
+                ),
+                CCSequence::create(
+                    CCDelayTime::create(3.9f / m_speed),
+                    CCSpawn::create(
+                        CCSequence::create(
+                            CCDelayTime::create(0.05f / m_speed),
+                            CCEaseSineOut::create(CCMoveBy::create(1.8f / m_speed, ccp(0, 3))),
+                            nullptr
+                        ),
+                        CCSequence::create(
+                            CCDelayTime::create(0.3f / m_speed),
+                            CCEaseSineOut::create(CCMoveBy::create(2.4f / m_speed, ccp(-3, 3))),
+                            nullptr
+                        ),
+                        CCSequence::create(
+                            CCDelayTime::create(0.5f / m_speed),
+                            CCEaseSineInOut::create(CCMoveBy::create(2.4f / m_speed, ccp(-7, 12))),
+                            nullptr
+                        ),
+                        CCSequence::create(
+                            CCDelayTime::create(1.5f / m_speed),
+                            CCEaseSineInOut::create(CCMoveBy::create(2.4f / m_speed, ccp(-13, 5))),
+                            nullptr
+                        ),
+                        nullptr
+                    ),
+                    nullptr
+                ),
+                nullptr
+            )
+        );
+    }
+
+    void onPause() override {
+        toggleHooks(false);
+    }
+
+    void onResume() override {
+        toggleHooks(true);
+    }
+
+    void end() override {
+        if (m_isPreview)
+            m_delegate->setBackgroundOpacity(200);
+
+        if (m_explosionSprite) {
+            m_explosionSprite->setVisible(false);
+            m_explosionSprite = nullptr;
+        }
+
+        BaseAnimation::end();
+    }
+
+};
