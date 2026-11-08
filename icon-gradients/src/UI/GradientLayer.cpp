@@ -589,7 +589,7 @@ void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
 	return FLAlertLayer::keyDown(key, timestamp);
 }
 
-bool GradientLayer::scrollWheel(float y, float) {
+void GradientLayer::scrollWheel(float y, float) {
     if (m_buttons.empty() || Mod::get()->getSettingValue<bool>("disable-keys")) return true;
     
     m_scroll = m_smoothScroll ? m_scroll + y : y;
