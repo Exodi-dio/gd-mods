@@ -615,6 +615,7 @@ void GradientLayer::scrollWheel(float y, float) {
     onIconButton(m_buttons[index]);
     return true;
     return true;
+    return true;
 }
 
 bool GradientLayer::init() {
