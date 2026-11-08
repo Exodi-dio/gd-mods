@@ -14,14 +14,14 @@ enum class SettingType {
     Percent,
     PercentToggle,
     Select,
+    Speed,
+    Color,
+    Scale,
     CelesteColor,
     CelesteFastToggle,
     SpeechBubbleSelect,
     Folder,
     Empty,
-    Speed,
-    AmongUsColor,
-    Scale,
     MonologueSelect,
 };
 
@@ -85,36 +85,6 @@ struct AnimationSetting {
     std::vector<std::string> elements;
 };
 
-struct DeathAnimation {
-    std::string id;
-    std::string name;
-    std::string description;
-    SettingType type;
-    std::vector<std::string> elements;
-};
-
-struct AnimationParams {
-    std::string id;
-    std::string name;
-    std::string description;
-    SettingType type;
-    std::vector<std::string> elements;
-};
-
-struct ExtraParams {
-    std::string id;
-    std::string name;
-    std::string description;
-    SettingType type;
-    std::vector<std::string> elements;
-};
-
-struct NoobHSV {
-    float h;
-    float s;
-    float v;
-};
-
 inline const std::array<AnimationSetting, 8> defaultSettings = {{
     { .id = "speed", .name = "Speed", .description = "The speed at which the animation plays.", .type = SettingType::Speed },
     { .id = "only-after", .name = "Only After", .description = "Play the animation only if you die after a certain percentage.", .type = SettingType::Percent },
@@ -165,15 +135,5 @@ inline const std::unordered_map<int, std::vector<AnimationSetting>> extraSetting
     { Anim::Fnaf7, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
     { Anim::Fnaf8, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
     { Anim::Fnaf9, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
-    { Anim::Fnaf10, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
-    { Anim::Fnaf11, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
-    { Anim::Fnaf12, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
-    { Anim::Fnaf13, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
-    { Anim::Fnaf14, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
-    { Anim::Fnaf15, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
-    { Anim::Fnaf16, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
-    { Anim::Fnaf17, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
-    { Anim::Fnaf18, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
-    { Anim::Fnaf19, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
     { Anim::Fnaf20, std::vector<AnimationSetting>{ { .id = "second-player", .name = "Second Player", .description = "Play the animation on the second player as well.", .type = SettingType::Toggle } } },
 };
