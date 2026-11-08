@@ -528,6 +528,7 @@ void GradientLayer::onHideToggle(CCObject* sender) {
 void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
         return onRemovePoint(nullptr);
 }
+}
 
     if (key == enumKeyCodes::KEY_Enter)
         return onAddPoint(nullptr);
@@ -612,6 +613,7 @@ bool GradientLayer::scrollWheel(float y, float) {
 bool GradientLayer::init() {
     Popup::init(320, 280);
 
+    return true;
     Dispatch<CCNode*, CCRect>("timestepyt.gdneko/create-neko-rect").send(m_mainLayer, {178.5f, 75, 259, 126});
 
     setMouseEnabled(true);
