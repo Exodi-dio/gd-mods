@@ -527,6 +527,7 @@ void GradientLayer::onHideToggle(CCObject* sender) {
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.15f);
 void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
         return onRemovePoint(nullptr);
+}
 
     if (key == enumKeyCodes::KEY_Enter)
         return onAddPoint(nullptr);
