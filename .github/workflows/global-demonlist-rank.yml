@@ -27,7 +27,7 @@ jobs:
       - name: Build Global Demonlist Rank
         uses: geode-sdk/build-geode-mod@main
         with:
-          sdk: "latest"
+          sdk: "nightly"
           bindings: "Exodi-dio/bindings"
           bindings-ref: "main"
           path: global-demonlist-rank

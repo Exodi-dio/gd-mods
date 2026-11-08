@@ -27,7 +27,7 @@ jobs:
       - name: Build level-id-api
         uses: geode-sdk/build-geode-mod@main
         with:
-          sdk: "latest"
+          sdk: "nightly"
           bindings: "Exodi-dio/bindings"
           bindings-ref: "main"
           path: level-id-api
