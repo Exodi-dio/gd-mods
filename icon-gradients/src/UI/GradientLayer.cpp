@@ -525,6 +525,7 @@ void GradientLayer::onPlayerToggle(PlayerToggle* toggle) {
 void GradientLayer::onHideToggle(CCObject* sender) {
     m_pointsHidden = !m_hideToggle->isToggled();
 }
+
 void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
 	if (key == enumKeyCodes::KEY_Escape)
 		return onClose(nullptr);
@@ -588,7 +589,7 @@ void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
 	return FLAlertLayer::keyDown(key, timestamp);
 }
 
-void GradientLayer::scrollWheel(float y, float) {
+bool GradientLayer::scrollWheel(float y, float) {
     if (m_buttons.empty() || Mod::get()->getSettingValue<bool>("disable-keys")) return true;
     
     m_scroll = m_smoothScroll ? m_scroll + y : y;
