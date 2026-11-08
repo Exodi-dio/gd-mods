@@ -196,7 +196,7 @@ void GradientLayer::colorSelected(const ccColor3B& color) {
     m_gInput->setString(std::to_string(color.g).c_str());
     m_bInput->setString(std::to_string(color.b).c_str());
 
-    textChanged(nullptr);
+
 }
  
 GradientLayer* GradientLayer::create() {
@@ -526,35 +526,6 @@ void GradientLayer::onHideToggle(CCObject* sender) {
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.15f);
 }
 
-void GradientLayer::textChanged(CCTextInputNode* input) {
-    int r = numFromString<int>(m_rInput->getString()).unwrapOr(0);
-    int g = numFromString<int>(m_gInput->getString()).unwrapOr(0);
-    int b = numFromString<int>(m_bInput->getString()).unwrapOr(0);
-
-    if (r > 255 || r < 0) return m_rInput->setString(std::to_string(m_picker->getColor().r).c_str());
-    if (g > 255 || g < 0) return m_gInput->setString(std::to_string(m_picker->getColor().g).c_str());
-    if (b > 255 || b < 0) return m_bInput->setString(std::to_string(m_picker->getColor().b).c_str());
-
-    m_ignoreColorChange = true;
-    
-    ccColor3B color = ccc3(r, g, b);
-    
-    m_picker->setColor(color);
-    m_colorSelector->setColor(color, 0.15f);
-
-    m_ignoreColorChange = false;
-}
-
-void GradientLayer::colorValueChanged(ccColor3B color) {
-    if (!m_ignoreColorChange) {
-        m_rInput->setString(std::to_string(color.r).c_str());
-        m_gInput->setString(std::to_string(color.g).c_str());
-        m_bInput->setString(std::to_string(color.b).c_str());
-        
-        m_colorSelector->getMainSprite()->setColor(color);
-    }
-
-    if (ColorNode* point = m_pointsLayer->getSelectedPoint())
         point->setColor(color);
 
     save();
@@ -740,7 +711,6 @@ bool GradientLayer::init() {
     m_picker = ColorPicker::create();
     m_picker->setScale(0.575f);
     m_picker->setPosition({112, 85});
-    m_picker->setDelegate(this);
 
     m_mainLayer->addChild(m_picker);
 
@@ -769,7 +739,6 @@ bool GradientLayer::init() {
     m_rInput->setScale(0.625f);
     m_rInput->setPosition({201, 100});
     m_rInput->setString("255");
-    m_rInput->getInputNode()->setDelegate(this);
     m_rInput->getInputNode()->setAllowedChars("0123456789");
 
     m_mainLayer->addChild(m_rInput);
@@ -778,7 +747,6 @@ bool GradientLayer::init() {
     m_gInput->setScale(0.625f);
     m_gInput->setPosition({201, 75});
     m_gInput->setString("255");
-    m_gInput->getInputNode()->setDelegate(this);
     m_gInput->getInputNode()->setAllowedChars("0123456789");
 
     m_mainLayer->addChild(m_gInput);
@@ -787,7 +755,6 @@ bool GradientLayer::init() {
     m_bInput->setScale(0.625f);
     m_bInput->setPosition({201, 50});
     m_bInput->setString("255");
-    m_bInput->getInputNode()->setDelegate(this);
     m_bInput->getInputNode()->setAllowedChars("0123456789");
 
     m_mainLayer->addChild(m_bInput);

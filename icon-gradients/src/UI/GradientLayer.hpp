@@ -9,7 +9,7 @@
 #include "ColorNode.hpp"
 #include "PlayerToggle.hpp"
 
-class GradientLayer : public Popup, public ColorPickerDelegate, public TextInputDelegate {
+class GradientLayer : public Popup, public ColorPickerDelegate {
 
 private:
 
