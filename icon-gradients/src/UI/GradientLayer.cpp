@@ -525,10 +525,6 @@ void GradientLayer::onPlayerToggle(PlayerToggle* toggle) {
 void GradientLayer::onHideToggle(CCObject* sender) {
     m_pointsHidden = !m_hideToggle->isToggled();
     m_pointsLayer->setPointsHidden(m_pointsHidden, 0.15f);
-}
-    updateGradient();
-}
-
 void GradientLayer::keyDown(enumKeyCodes key, double timestamp) {
 	if (key == enumKeyCodes::KEY_Escape)
 		return onClose(nullptr);
