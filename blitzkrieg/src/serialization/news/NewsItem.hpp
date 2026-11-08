@@ -1,4 +1,6 @@
 #pragma once
+#ifndef NEWSITEM_HPP
+#define NEWSITEM_HPP
 
 #include <ctime>
 #include <string>
@@ -68,3 +70,5 @@ inline std::string newsTypeToString(
     return "unknown";
   }
 }
+
+#endif // NEWSITEM_HPP

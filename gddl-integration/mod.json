@@ -9,7 +9,6 @@
 	"id": "b1rtek.gddlintegration",
 	"name": "GDDL Integration",
 	"version": "v1.3.5",
-	"developer": "TobyAdd",
 	"description": "Integration with Geometry Dash Demon Ladder - level tiers, search and more",
 	"developers": ["B1rtek", "Diversion"],
 	"links": {
