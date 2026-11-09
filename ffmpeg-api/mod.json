@@ -1,0 +1,20 @@
+{
+    "geode": "6.0.0-alpha.1",
+    "gd": {
+        "android": "2.2091"
+    },
+    "api": {
+        "include": [
+            "include/*.hpp"
+        ]
+    },
+    "id": "eclipse.ffmpeg-api",
+    "name": "FFmpeg API",
+    "version": "v2.1.0",
+    "developers": ["Eclipse Team", "maxnu", "Prevter", "ccchanged"],
+    "description": "Interaction with FFmpeg made easy",
+    "tags": ["utility", "offline", "developer", "api"],
+    "links": {
+        "source": "https://github.com/ccchanged/ffmpeg-api"
+    }
+}

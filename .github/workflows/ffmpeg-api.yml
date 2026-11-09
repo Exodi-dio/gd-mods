@@ -1,0 +1,62 @@
+name: Build FFmpeg API
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    tags: [ "ffmpeg-api-v*" ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [Android32, Android64]
+        include:
+          - target: Android32
+            android-abi: armeabi-v7a
+            os: ubuntu-latest
+          - target: Android64
+            android-abi: arm64-v8a
+            os: ubuntu-latest
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build static FFmpeg libraries
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cmake make pkg-config nasm git curl wget p7zip-full python3 > /dev/null
+          git clone --depth 1 https://github.com/ccchanged/ffmpeg-android-maker.git ffmpeg-android-maker
+          cd ffmpeg-android-maker
+          export ANDROID_SDK_HOME=/usr/local/lib/android/sdk
+          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/29.0.14206865
+          ./ffmpeg-android-maker.sh --enable-libaom --enable-libvpx --enable-libx264 --enable-libx265 --android-api-level=24 --target-abis=${{ matrix.android-abi }}
+          mkdir -p ../ffmpeg-api/lib/${{ matrix.android-abi }}
+          cp output/lib/${{ matrix.android-abi }}/*.a ../ffmpeg-api/lib/${{ matrix.android-abi }}/
+
+      - name: Build FFmpeg API
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          sdk: "latest"
+          bindings: "Exodi-dio/bindings"
+          bindings-ref: "main"
+          path: ffmpeg-api
+          target: ${{ matrix.target }}
+          build-config: Release
+          combine: true
+
+  package:
+    name: Package FFmpeg API
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: geode-sdk/build-geode-mod/combine@main
+        id: build
+      - name: Upload merged geode
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-api-geode
+          path: ${{ steps.build.outputs.build-output }}/*.geode
