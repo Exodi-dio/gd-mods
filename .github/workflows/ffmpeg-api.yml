@@ -47,6 +47,7 @@ jobs:
           target: ${{ matrix.target }}
           build-config: Release
           combine: true
+          android-min-sdk: 24
 
   package:
     name: Package FFmpeg API
