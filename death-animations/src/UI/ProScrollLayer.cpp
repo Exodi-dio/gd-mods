@@ -109,7 +109,7 @@ ProScrollLayer::ProScrollLayer(cocos2d::CCRect const& rect, bool scrollWheelEnab
     this->setTouchEnabled(true);
     this->setUserFlag("alk.better-touch-prio/steals-touch");
 
-    CCTouchDispatcher::get()->registerForcePrio(this, 2);
+    CCTouchDispatcher::get()->registerForcePrio(this, 2, 0);
 }
 
 ProScrollLayer::~ProScrollLayer() {
