@@ -100,7 +100,7 @@ private:
     void colorValueChanged(ccColor3B) override;
     void textChanged(CCTextInputNode*) override;
     void keyDown(enumKeyCodes, double) override;
-    void scrollWheel(float, float) override;
+    void scrollWheel(float y, float) override;
 
 public:
 
