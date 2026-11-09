@@ -3,10 +3,11 @@
 // all thanks to https://github.com/CallocGD/GD-2.205-Decompiled
 // and also from https://github.com/geode-sdk/geode
 
-void ProScrollLayer::scrollWheel(float pointX, float pointY) {
+bool ProScrollLayer::scrollWheel(float pointX, float pointY) {
     if (pointX != 0.0) {
         CCScrollLayerExt::scrollLayer(pointX);
     }
+    return true;
 }
 bool ProScrollLayer::ccTouchBegan(cocos2d::CCTouch *touch, cocos2d::CCEvent *event) {
     if (geode::cocos::nodeIsVisible(this)) {
