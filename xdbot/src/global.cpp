@@ -1,23 +1,24 @@
-#include "ui/record_layer.hpp"
 #include "ui/game_ui.hpp"
+#include "ui/record_layer.hpp"
 
+#include <Geode/binding/LevelEditorLayer.hpp>
 #include <Geode/modify/CCTextInputNode.hpp>
 
-#include <asp/fs/std.hpp>
-
 #ifdef GEODE_IS_WINDOWS
-#include <geode.custom-keybinds/include/Keybinds.hpp>
+// #include <geode.custom-keybinds/include/Keybinds.hpp> // incompatible with
+// Geode v5
 #endif
 
 #include <random>
 
 class $modify(CCTextInputNode) {
 
-    bool ccTouchBegan(cocos2d::CCTouch * v1, cocos2d::CCEvent * v2) {
-        if (this->getID() == "disabled-input"_spr) return false;
+  bool ccTouchBegan(cocos2d::CCTouch *v1, cocos2d::CCEvent *v2) {
+    if (this->getID() == "disabled-input"_spr)
+      return false;
 
-        return CCTextInputNode::ccTouchBegan(v1, v2);
-    }
+    return CCTextInputNode::ccTouchBegan(v1, v2);
+  }
 };
 
 struct IncompatibleSetting {
@@ -33,36 +34,35 @@ struct IncompatibleMod {
   std::vector<IncompatibleSetting> incompatSettings;
 };
 
-const std::vector<IncompatibleMod> incompatibleMods {
-  { "syzzi.click_between_frames", true, { {"soft-toggle", false, true }, { "actual-delta", true } } },
-  { "alphalaneous.click_after_frames", true, { { "soft-toggle", false, true } } },
-  { "thesillydoggo.qolmod", true, { { "tps-bypass_enabled", true, false, true } } },
-  // { "zmx.cbf-lite", false, {  } }
+const std::vector<IncompatibleMod> incompatibleMods{
+    {"alphalaneous.click_after_frames", true, {{"soft-toggle", false, true}}},
+    {"thesillydoggo.qolmod", true, {{"tps-bypass_enabled", true, false, true}}},
+    // { "zmx.cbf-lite", false, {  } }
 };
 
 bool Global::hasIncompatibleMods() {
   std::vector<std::string> modsToDisable;
   std::vector<std::string> settingsToDisable;
 
-  if (Mod* mod = Loader::get()->getLoadedMod("firee.prism")) {
+  if (Mod *mod = Loader::get()->getLoadedMod("firee.prism")) {
     auto json = mod->getSavedValue<matjson::Value>("values");
-    for (const auto& obj : json.asArray().unwrap()) {
+    for (const auto &obj : json.asArray().unwrap()) {
 
-      if (obj["name"].asString().unwrapOrDefault() != "TPS Bypass") continue;
+      if (obj["name"].asString().unwrapOrDefault() != "TPS Bypass")
+        continue;
 
       if (obj["value"].asInt().unwrapOrDefault() != 240)
         settingsToDisable.push_back("<cr>TPS Bypass (Prism Menu)</c>");
 
       break;
-
     }
   }
 
-  #ifdef GEODE_IS_WINDOWS
+#ifdef GEODE_IS_WINDOWS
 
-  if (Mod* mod = Loader::get()->getLoadedMod("tobyadd.gdh")) {
-    std::filesystem::path configPath = (mod->getSaveDir() / "config.json").toStdPath().unwrapOrDefault();
-	  using namespace nlohmann;
+  if (Mod *mod = Loader::get()->getLoadedMod("tobyadd.gdh")) {
+    std::filesystem::path configPath = mod->getSaveDir().toStdPath().unwrapOrDefault() / "config.json";
+    using namespace nlohmann;
 
     if (std::filesystem::exists(configPath)) {
       std::ifstream jsonFile(configPath);
@@ -77,12 +77,12 @@ bool Global::hasIncompatibleMods() {
     }
   }
 
-  #else
+#else
 
-  if (Mod* mod = Loader::get()->getLoadedMod("tobyadd.gdh_mobile")) {
-    std::filesystem::path configPath = (mod->getSaveDir() / "config.json").toStdPath().unwrapOrDefault();
-	  using namespace nlohmann;
-    
+  if (Mod *mod = Loader::get()->getLoadedMod("tobyadd.gdh_mobile")) {
+    std::filesystem::path configPath = mod->getSaveDir().toStdPath().unwrapOrDefault() / "config.json";
+    using namespace nlohmann;
+
     if (std::filesystem::exists(configPath)) {
       std::ifstream jsonFile(configPath);
       if (jsonFile.is_open()) {
@@ -96,12 +96,13 @@ bool Global::hasIncompatibleMods() {
     }
   }
 
-  #endif
+#endif
 
   for (IncompatibleMod incompatMod : incompatibleMods) {
-    Mod* mod = Loader::get()->getLoadedMod(incompatMod.ID);
+    Mod *mod = Loader::get()->getLoadedMod(incompatMod.ID);
 
-    if (!mod) continue;
+    if (!mod)
+      continue;
 
     std::string modName = mod->getName();
 
@@ -111,17 +112,20 @@ bool Global::hasIncompatibleMods() {
     }
 
     for (IncompatibleSetting sett : incompatMod.incompatSettings) {
-      bool value = sett.isSavedValue ? mod->getSavedValue<bool>(sett.ID) : mod->getSettingValue<bool>(sett.ID);
+      bool value = sett.isSavedValue ? mod->getSavedValue<bool>(sett.ID)
+                                     : mod->getSettingValue<bool>(sett.ID);
 
-      if (value != sett.incompatValue) continue;
+      if (value != sett.incompatValue)
+        continue;
 
       if (sett.isModToggle)
         modsToDisable.push_back(modName);
       else {
-        std::string settName = sett.isSavedValue ? sett.ID : mod->getSetting(sett.ID)->getDisplayName();
+        std::string settName = sett.isSavedValue
+                                   ? sett.ID
+                                   : mod->getSetting(sett.ID)->getDisplayName();
         settingsToDisable.push_back(fmt::format("{} ({})", settName, modName));
       }
-
     }
   }
 
@@ -129,18 +133,26 @@ bool Global::hasIncompatibleMods() {
     std::string incompatString = "";
 
     for (const std::string name : modsToDisable)
-      incompatString += fmt::format("<cr>{}</c>{}", name, (name != modsToDisable.back() ? ", " : ""));
+      incompatString += fmt::format("<cr>{}</c>{}", name,
+                                    (name != modsToDisable.back() ? ", " : ""));
 
-    FLAlertLayer::create("Warning", "The following mods are incompatible: \n" + incompatString, "Ok")->show();
+    FLAlertLayer::create(
+        "Warning", "The following mods are incompatible: \n" + incompatString,
+        "Ok")
+        ->show();
 
   } else if (!settingsToDisable.empty()) {
     std::string incompatString = "";
 
     for (const std::string name : settingsToDisable)
-      incompatString += fmt::format("<cr>{}</c>{}", name, (name != settingsToDisable.back() ? ", " : ""));
+      incompatString += fmt::format(
+          "<cr>{}</c>{}", name, (name != settingsToDisable.back() ? ", " : ""));
 
-    FLAlertLayer::create("Warning", "The following mod settings are incompatible: \n" + incompatString, "Ok")->show();
-    
+    FLAlertLayer::create("Warning",
+                         "The following mod settings are incompatible: \n" +
+                             incompatString,
+                         "Ok")
+        ->show();
   }
 
   bool ret = !modsToDisable.empty() || !settingsToDisable.empty();
@@ -155,67 +167,68 @@ bool Global::hasIncompatibleMods() {
 }
 
 float Global::getTPS() {
-  auto& g = Global::get();
+  auto &g = Global::get();
   return g.tpsEnabled ? g.tps : 240.f;
 }
 
 int Global::getCurrentFrame(bool editor) {
-  // double levelTime;
-  PlayLayer* pl = PlayLayer::get();
+  PlayLayer *pl = PlayLayer::get();
+  auto *editorLayer = LevelEditorLayer::get();
+  auto &g = Global::get();
+
+  int frame;
 
   if (!pl) {
-    if (!editor) return 0;
+    if (!editorLayer || editorLayer->m_playbackMode != PlaybackMode::Playing)
+      return 0;
 
-    // levelTime = GJBaseGameLayer::get()->m_gameState.m_levelTime;
-  }
-
-  auto& g = Global::get();
-  int frame;
-  // levelTime = pl->m_gameState.m_levelTime;
-
-  if (!g.macro.xdBotMacro && g.state == state::playing) {
-    frame = pl->m_gameState.m_currentProgress;
-  }
-  else {
-    frame = static_cast<int>(pl->m_gameState.m_levelTime * getTPS());
-    frame++;
+    frame = static_cast<int>(editorLayer->m_gameState.m_currentProgress / 2);
+  } else {
+    if (!g.macro.xdBotMacro && g.state == state::playing) {
+      frame = pl->m_gameState.m_currentProgress;
+    } else {
+      frame = static_cast<int>(pl->m_gameState.m_levelTime * getTPS());
+      frame++;
+    }
   }
 
   frame -= g.frameOffset;
-  if (frame < 0) return 0;
+  if (frame < 0)
+    return 0;
 
   return frame;
 }
 
 void Global::updateKeybinds() {
 #ifdef GEODE_IS_WINDOWS
-
-  auto& g = Global::get();
-  for (size_t i = 0; i < 6; i++) {
-    auto keys = keybinds::BindManager::get()->getBindsFor(buttonIDs[i]);
-    std::vector<int> keysInts = {};
-
-    for (size_t j = 0; j < keys.size(); j++) {
-      keysInts.push_back(keys[j]->getHash());
-      g.allKeybinds.insert(keys[j]->getHash());
-    }
-
-    g.keybinds[i].clear();
-    for (int k = 0; k < keysInts.size(); k++)
-      g.keybinds[i].push_back(keysInts[k]);
-  }
+  // TODO: custom-keybinds is incompatible with Geode v5. Migrate to built-in
+  // KeybindSettingV3. auto& g = Global::get(); for (size_t i = 0; i < 6; i++) {
+  //   auto keys = keybinds::BindManager::get()->getBindsFor(buttonIDs[i]);
+  //   std::vector<int> keysInts = {};
+  //
+  //   for (size_t j = 0; j < keys.size(); j++) {
+  //     keysInts.push_back(keys[j]->getHash());
+  //     g.allKeybinds.insert(keys[j]->getHash());
+  //   }
+  //
+  //   g.keybinds[i].clear();
+  //   for (int k = 0; k < keysInts.size(); k++)
+  //     g.keybinds[i].push_back(keysInts[k]);
+  // }
 #endif
 }
 
 void Global::updateSeed(bool isRestart) {
 
-  auto& g = Global::get();
+  auto &g = Global::get();
 
   if (g.seedEnabled) {
-    PlayLayer* pl = PlayLayer::get();
-    if (!pl) return;
+    PlayLayer *pl = PlayLayer::get();
+    if (!pl)
+      return;
 
-    unsigned long long ull = std::stoull(g.mod->getSavedValue<std::string>("macro_seed"), nullptr, 0);
+    unsigned long long ull = std::stoull(
+        g.mod->getSavedValue<std::string>("macro_seed"), nullptr, 0);
     uintptr_t seed = static_cast<uintptr_t>(ull);
     int finalSeed;
 
@@ -223,8 +236,7 @@ void Global::updateSeed(bool isRestart) {
       std::mt19937 generator(seed + pl->m_gameState.m_currentProgress);
       std::uniform_int_distribution<int> distribution(10000, 999999999);
       finalSeed = distribution(generator);
-    }
-    else {
+    } else {
       std::random_device rd;
       std::mt19937 generator(rd());
       std::uniform_int_distribution<int> distribution(1000, 999999999);
@@ -232,7 +244,7 @@ void Global::updateSeed(bool isRestart) {
     }
 
 #ifdef GEODE_IS_WINDOWS
-    *(uintptr_t*)((char*)geode::base::get() + seedAddr) = finalSeed;
+    *(uintptr_t *)((char *)geode::base::get() + seedAddr) = finalSeed;
 #else
     GameToolbox::fast_srand(finalSeed);
 #endif
@@ -242,23 +254,31 @@ void Global::updateSeed(bool isRestart) {
 
   if (isRestart && g.state == state::recording) {
 #ifdef GEODE_IS_WINDOWS
-    g.macro.seed = *(uintptr_t*)((char*)geode::base::get() + seedAddr);
+    g.macro.seed = *(uintptr_t *)((char *)geode::base::get() + seedAddr);
 #else
     g.macro.seed = 0;
 #endif
   }
-
 }
 
 void Global::updatePitch(float value) {
-  auto& g = Global::get();
+  auto &g = Global::get();
   if (!g.speedhackAudio) {
-    if (g.currentPitch != 1.f) value = 1.f;
-    else return;
+    if (g.mod->getSavedValue<bool>("macro_audio_speedhack_enabled")) {
+      std::string valStr =
+          g.mod->getSavedValue<std::string>("macro_audio_speedhack");
+      if (!valStr.empty())
+        value = std::stof(valStr);
+    } else {
+      if (g.currentPitch != 1.f)
+        value = 1.f;
+      else
+        return;
+    }
   }
 
-  FMODAudioEngine* fmod = FMODAudioEngine::sharedEngine();
-  FMOD::ChannelGroup* channel = nullptr;
+  FMODAudioEngine *fmod = FMODAudioEngine::sharedEngine();
+  FMOD::ChannelGroup *channel = nullptr;
   fmod->m_system->getMasterChannelGroup(&channel);
 
   if (channel) {
@@ -267,23 +287,67 @@ void Global::updatePitch(float value) {
   }
 }
 
-void Global::frameStep() {
-  auto& g = Global::get();
-  if (!PlayLayer::get() || !g.frameStepper) return;
+void Global::frameStep(int amount) {
+  auto &g = Global::get();
+  if (!PlayLayer::get() || !g.frameStepper)
+    return;
 
+  g.stepFramesPending += amount;
+  g.stepFrameDrawMultiple += amount;
   g.stepFrame = true;
   g.stepFrameDraw = true;
   g.stepFrameParticle = 4;
 }
 
+void Global::frameStepBackward(int amount) {
+  auto &g = Global::get();
+  PlayLayer *pl = PlayLayer::get();
+  if (!pl || !g.frameStepper)
+    return;
+
+  int currentFrame = Global::getCurrentFrame();
+  int newFrame = std::max(0, currentFrame - amount);
+
+  if (g.state == state::recording) {
+    auto &inputs = g.macro.inputs;
+    inputs.erase(std::remove_if(inputs.begin(), inputs.end(),
+                                [newFrame](const input &inp) {
+                                  return inp.frame > newFrame;
+                                }),
+                 inputs.end());
+
+    auto &fixes = g.macro.frameFixes;
+    fixes.erase(std::remove_if(fixes.begin(), fixes.end(),
+                               [newFrame](const gdr::FrameFix &fix) {
+                                 return fix.frame > newFrame;
+                               }),
+                fixes.end());
+  }
+
+  g.continueFrame = newFrame;
+  g.continueBotting = true;
+  g.continueBottingSpeedhack = true;
+
+  if (g.state != state::playing) {
+    g.state = state::playing;
+  }
+
+  if (!pl->m_levelEndAnimationStarted) {
+    pl->m_levelSettings->m_platformerMode ? pl->resetLevelFromStart()
+                                          : pl->resetLevel();
+  }
+}
+
 void Global::toggleSpeedhack() {
-  auto& g = Global::get();
-  g.mod->setSavedValue("macro_speedhack_enabled", !g.mod->getSavedValue<bool>("macro_speedhack_enabled"));
+  auto &g = Global::get();
+  g.mod->setSavedValue("macro_speedhack_enabled",
+                       !g.mod->getSavedValue<bool>("macro_speedhack_enabled"));
   g.speedhackEnabled = g.mod->getSavedValue<bool>("macro_speedhack_enabled");
 
   if (g.layer) {
-    if (static_cast<RecordLayer*>(g.layer)->speedhackToggle)
-      static_cast<RecordLayer*>(g.layer)->speedhackToggle->toggle(g.mod->getSavedValue<bool>("macro_speedhack_enabled"));
+    if (static_cast<RecordLayer *>(g.layer)->speedhackToggle)
+      static_cast<RecordLayer *>(g.layer)->speedhackToggle->toggle(
+          g.mod->getSavedValue<bool>("macro_speedhack_enabled"));
   }
 
   if (!g.mod->getSavedValue<bool>("macro_speedhack_enabled"))
@@ -298,24 +362,25 @@ void Global::toggleFrameStepper() {
 }
 
 void Global::frameStepperOn() {
-  auto& g = Global::get();
+  auto &g = Global::get();
 
   g.mod->setSavedValue("macro_frame_stepper", true);
   g.frameStepper = true;
 
   if (g.layer) {
-    if (static_cast<RecordLayer*>(g.layer)->frameStepperToggle)
-      static_cast<RecordLayer*>(g.layer)->frameStepperToggle->toggle(true);
+    if (static_cast<RecordLayer *>(g.layer)->frameStepperToggle)
+      static_cast<RecordLayer *>(g.layer)->frameStepperToggle->toggle(true);
   }
 
   if (PlayLayer::get())
-    g.frameStepperMusicTime = FMODAudioEngine::sharedEngine()->getMusicTimeMS(0);
+    g.frameStepperMusicTime =
+        FMODAudioEngine::sharedEngine()->getMusicTimeMS(0);
 
   Interface::updateButtons();
 }
 
 void Global::frameStepperOff() {
-  auto& g = Global::get();
+  auto &g = Global::get();
 
   g.mod->setSavedValue("macro_frame_stepper", false);
   g.stepFrame = false;
@@ -323,31 +388,36 @@ void Global::frameStepperOff() {
   g.frameStepper = false;
 
   if (PlayLayer::get() && g.frameStepperMusicTime != 0) {
-    FMODAudioEngine::sharedEngine()->setMusicTimeMS(g.frameStepperMusicTime, true, 0);
+    FMODAudioEngine::sharedEngine()->setMusicTimeMS(g.frameStepperMusicTime,
+                                                    true, 0);
     g.frameStepperMusicTime = 0;
   }
 
   if (g.layer) {
-    if (static_cast<RecordLayer*>(g.layer)->frameStepperToggle)
-      static_cast<RecordLayer*>(g.layer)->frameStepperToggle->toggle(false);
+    if (static_cast<RecordLayer *>(g.layer)->frameStepperToggle)
+      static_cast<RecordLayer *>(g.layer)->frameStepperToggle->toggle(false);
   }
 
   Interface::updateButtons();
 }
 
-PauseLayer* Global::getPauseLayer() {
-  CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
-  CCObject* child;
-  for (auto child_it : CCArrayExt<CCObject*>(children)) { child = static_cast<CCObject*>(child_it);
-    if (PauseLayer* pauseLayer = typeinfo_cast<PauseLayer*>(child))
+PauseLayer *Global::getPauseLayer() {
+  CCArray *children =
+      CCDirector::sharedDirector()->getRunningScene()->getChildren();
+  CCObject *child;
+  for (auto child : CCArrayExt<CCObject *>(children)) {
+    if (PauseLayer *pauseLayer = typeinfo_cast<PauseLayer *>(child))
       return pauseLayer;
   }
 
   return nullptr;
 }
 
-$execute{
-  auto & g = Global::get();
+$execute {
+  auto &g = Global::get();
+
+  if (!g.mod->hasSavedValue("render_hdr"))
+    g.mod->setSavedValue("render_hdr", false);
 
   if (!g.mod->setSavedValue("defaults_set_14", true)) {
     g.mod->setSavedValue("render_fade_in_video", std::to_string(2));
@@ -355,19 +425,21 @@ $execute{
   }
 
   if (!g.mod->setSavedValue("defaults_set_12", true)) {
-    g.mod->setSettingValue<asp::fs::Path>("macros_folder", g.mod->getSaveDir() / "macros");
-    g.mod->setSettingValue<asp::fs::Path>("autosaves_folder", g.mod->getSaveDir() / "autosaves");
+    g.mod->setSettingValue<asp::fs::Path>(
+        "macros_folder", g.mod->getSaveDir() / "macros");
+    g.mod->setSettingValue<asp::fs::Path>(
+        "autosaves_folder", g.mod->getSaveDir() / "autosaves");
   }
 
-  #ifdef GEODE_IS_ANDROID
-  
+#ifdef GEODE_IS_ANDROID
+
   if (!g.mod->setSavedValue("defaults_set_15", true))
     g.mod->setSavedValue("render_video_args", std::string(""));
-  
+
   if (!g.mod->setSavedValue("defaults_set_11", true))
     g.mod->setSavedValue("render_codec", std::string("libx264"));
-  
-  #endif
+
+#endif
 
   if (!g.mod->setSavedValue("defaults_set_10", true)) {
     g.mod->setSettingValue("restore_page", true);
@@ -376,7 +448,7 @@ $execute{
     g.mod->setSavedValue("autosave_interval", std::to_string(10));
     g.mod->setSavedValue("autosave_checkpoint_enabled", true);
     g.mod->setSavedValue("autosave_levelend_enabled", true);
-    
+
     g.mod->setSavedValue("render_fade_in_video", std::to_string(2));
     g.mod->setSavedValue("render_fade_out_video", std::to_string(2));
 
@@ -394,17 +466,20 @@ $execute{
     g.mod->setSavedValue("trajectory_color1", ccc3(74, 226, 85));
     g.mod->setSavedValue("trajectory_color2", ccc3(130, 8, 8));
     g.mod->setSavedValue("trajectory_length", std::to_string(240));
-
   }
 
   if (!g.mod->setSavedValue("defaults_set3", true)) {
-    g.mod->setSettingValue<asp::fs::Path>("render_folder", g.mod->getSaveDir() / "renders");
+    g.mod->setSettingValue<asp::fs::Path>(
+        "render_folder", g.mod->getSaveDir() / "renders");
     g.mod->setSavedValue("render_file_extension", std::string(".mp4"));
     g.mod->setSavedValue("render_sfx_volume", 1.f);
     g.mod->setSavedValue("render_music_volume", 1.f);
     g.mod->setSavedValue("respawn_time", 0.5f);
     g.mod->setSavedValue("render_seconds_after", std::to_string(2));
+    g.mod->setSavedValue("macro_audio_speedhack", std::string("1.0"));
+    g.mod->setSavedValue("macro_audio_speedhack_enabled", false);
     g.mod->setSavedValue("render_record_audio", true);
+    g.mod->setSavedValue("render_only_song", false);
     g.mod->setSavedValue("render_args", std::string("-pix_fmt yuv420p"));
     g.mod->setSavedValue("macro_noclip_p1", true);
     g.mod->setSavedValue("macro_noclip_p2", true);
@@ -413,15 +488,25 @@ $execute{
     g.mod->setSavedValue("render_height", std::to_string(1080));
     g.mod->setSavedValue("render_bitrate", std::to_string(12));
     g.mod->setSavedValue("render_fps", std::to_string(60));
-    g.mod->setSavedValue("render_video_args", std::string("colorspace=all=bt709:iall=bt470bg:fast=1"));
+    g.mod->setSavedValue(
+        "render_video_args",
+        std::string("colorspace=all=bt709:iall=bt470bg:fast=1"));
 
     g.mod->setSavedValue("render_codec", std::string("libx264"));
-    #ifdef GEODE_IS_WINDOWS
-    g.mod->setSettingValue("ffmpeg_path", geode::dirs::getGameDir() / "ffmpeg.exe");
-    #endif
+#ifdef GEODE_IS_WINDOWS
+    g.mod->setSettingValue("ffmpeg_path",
+                           geode::dirs::getGameDir() / "ffmpeg.exe");
+#endif
 
     g.mod->setSavedValue("render_record_audio", true);
     g.mod->setSavedValue("render_hide_labels", true);
+
+#ifdef GEODE_IS_ANDROID
+    // Mobile defaults: prefer level-song mixing and avoid colorspace args.
+    g.mod->setSavedValue("render_video_args", std::string(""));
+    g.mod->setSavedValue("render_record_audio", false);
+    g.mod->setSavedValue("render_only_song", true);
+#endif
 
     g.mod->setSavedValue("macro_seed", std::to_string(1));
     g.mod->setSavedValue("macro_speedhack", std::string("0.5"));
@@ -431,25 +516,36 @@ $execute{
     g.mod->setSavedValue("macro_auto_safe_mode", true);
     g.mod->setSavedValue("macro_speedhack_audio", true);
     g.mod->setSavedValue("macro_show_frame_label", false);
+    g.mod->setSavedValue("macro_show_ghost", false);
+    g.mod->setSavedValue("macro_pathfinder_enabled", false);
     g.mod->setSavedValue("macro_hide_playing_label", true);
-
+    g.mod->setSavedValue("pathfinder_backtrack_step", 4);
+    g.mod->setSavedValue("pathfinder_max_shifts", 6);
+    g.mod->setSavedValue("pathfinder_actions_back", 8);
+    g.mod->setSavedValue("pathfinder_warmup_frames", 12);
+    g.mod->setSavedValue("pathfinder_min_action_frame", 6);
+    g.mod->setSavedValue("pathfinder_min_progress_record", 2);
+    g.mod->setSavedValue("pathfinder_min_solve_frame", 30);
+    g.mod->setSavedValue("pathfinder_search_window", 120);
+    g.mod->setSavedValue("pathfinder_console_logs", true);
     g.mod->setSavedValue("menu_show_button", true);
     g.mod->setSavedValue("menu_pause_on_open", false);
     g.mod->setSavedValue("menu_show_cursor", true);
 
-    #ifdef GEODE_IS_ANDROID
+#ifdef GEODE_IS_ANDROID
     g.mod->setSavedValue("menu_show_cursor", false);
-    #endif
-
+#endif
   }
 
   g.showTrajectory = g.mod->getSavedValue<bool>("macro_show_trajectory");
+  g.ghostPlayback = g.mod->getSavedValue<bool>("macro_show_ghost");
   g.coinFinder = g.mod->getSavedValue<bool>("macro_coin_finder");
   g.frameStepper = g.mod->getSavedValue<bool>("macro_frame_stepper");
   g.seedEnabled = g.mod->getSavedValue<bool>("macro_seed_enabled");
   g.frameLabel = g.mod->getSavedValue<bool>("macro_show_frame_label");
   g.speedhackAudio = g.mod->getSavedValue<bool>("macro_speedhack_audio");
-  g.trajectoryBothSides = g.mod->getSavedValue<bool>("macro_trajectory_both_sides");
+  g.trajectoryBothSides =
+      g.mod->getSavedValue<bool>("macro_trajectory_both_sides");
   g.p2mirror = g.mod->getSavedValue<bool>("p2_input_mirror");
   g.tpsEnabled = g.mod->getSavedValue<bool>("macro_tps_enabled");
   g.tps = g.mod->getSavedValue<double>("macro_tps");
@@ -457,7 +553,8 @@ $execute{
   g.autoclickerP1 = g.mod->getSavedValue<bool>("autoclicker_p1");
   g.autoclickerP2 = g.mod->getSavedValue<bool>("autoclicker_p2");
   g.disableShaders = g.mod->getSavedValue<bool>("disableShaders");
-  g.autosaveIntervalEnabled = g.mod->getSavedValue<bool>("autosave_interval_enabled");
+  g.autosaveIntervalEnabled =
+      g.mod->getSavedValue<bool>("autosave_interval_enabled");
   g.autosaveEnabled = g.mod->getSavedValue<bool>("macro_auto_save");
 
   g.holdFor = g.mod->getSavedValue<int64_t>("autoclicker_hold_for");
@@ -466,8 +563,23 @@ $execute{
   g.releaseFor2 = g.mod->getSavedValue<int64_t>("autoclicker_release_for2");
   g.currentPage = g.mod->getSavedValue<int64_t>("current_page");
 
-  g.autosaveInterval = (geode::utils::numFromString<float>(g.mod->getSavedValue<std::string>("autosave_interval")).unwrapOr(0.f) * 60);
-  
+  g.autosaveInterval =
+      (geode::utils::numFromString<float>(
+           g.mod->getSavedValue<std::string>("autosave_interval"))
+           .unwrapOr(0.f) *
+       60);
+
+  // NakoMod: Swift Clicks
+  g.swiftClickEnabled = g.mod->getSavedValue<bool>("swift_click_enabled");
+  g.swiftClickCount = g.mod->getSavedValue<int64_t>("swift_click_count", 2);
+  g.swiftClickKey = g.mod->getSavedValue<int64_t>("swift_click_key", 72);
+
+  // NakoMod: Auto Swift Click
+  g.autoSwiftClickEnabled =
+      g.mod->getSavedValue<bool>("auto_swift_click_enabled");
+  g.autoSwiftClickCount =
+      g.mod->getSavedValue<int64_t>("auto_swift_click_count", 2);
+
   g.speedhackEnabled = false;
   g.mod->setSavedValue("macro_speedhack_enabled", false);
 
@@ -478,10 +590,11 @@ $execute{
 
   if (g.mod->getSettingValue<std::string>("macro_accuracy") == "Frame Fixes")
     g.frameFixes = true;
-  else if (g.mod->getSettingValue<std::string>("macro_accuracy") == "Input Fixes")
+  else if (g.mod->getSettingValue<std::string>("macro_accuracy") ==
+           "Input Fixes")
     g.inputFixes = true;
 
   g.macro.author = "N/A";
   g.macro.description = "N/A";
-  g.macro.gameVersion = 2.206;
+  g.macro.gameVersion = 2.2081;
 };

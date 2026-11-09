@@ -1,10 +1,10 @@
 #include "../includes.hpp"
 
-class NoclipSettingsLayer : public PopupCompat<> {
+class NoclipSettingsLayer : public geode::Popup {
 
 private:
 	
-    bool setup() override {
+    bool setup() {
         setTitle("Noclip");
 		
 		cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;
@@ -13,7 +13,7 @@ private:
 		m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
         m_title->setPosition(m_title->getPosition() + offset);
 
-    	Utils::setBackgroundColor(m_bgSprite);
+    	// Utils::setBackgroundColor(m_bgSprite);
 		CCMenu* menu = CCMenu::create();
 		m_mainLayer->addChild(menu);
 

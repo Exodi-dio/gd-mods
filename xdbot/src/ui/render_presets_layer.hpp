@@ -1,7 +1,7 @@
 #include "../includes.hpp"
 #include "record_layer.hpp"
 
-class RenderPresetsLayer : public PopupCompat<> {
+class RenderPresetsLayer : public geode::Popup {
 
 public:
 
@@ -9,7 +9,7 @@ public:
 
 private:
 
-    bool setup() override {
+    bool setup() {
         setTitle("Render Presets");
 
         CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png", { 0, 0, 80, 80 });
@@ -140,6 +140,7 @@ private:
         m->setSavedValue("render_hide_levelcomplete", json["hide_levelcomplete"].asBool().unwrapOrDefault());
         m->setSavedValue("render_fade_in", json["fade_in"].asBool().unwrapOrDefault());
         m->setSavedValue("render_fade_out", json["fade_out"].asBool().unwrapOrDefault());
+        m->setSavedValue("render_hdr", json["hdr"].asBool().unwrapOrDefault());
 
         m->setSavedValue("render_sfx_volume", json["sfx_volume"].asDouble().unwrapOrDefault());
         m->setSavedValue("render_music_volume", json["music_volume"].asDouble().unwrapOrDefault());
@@ -170,6 +171,7 @@ private:
         json["hide_levelcomplete"] = m->getSavedValue<bool>("render_hide_levelcomplete");
         json["fade_in"] = m->getSavedValue<bool>("render_fade_in");
         json["fade_out"] = m->getSavedValue<bool>("render_fade_out");
+        json["hdr"] = m->getSavedValue<bool>("render_hdr");
 
         json["sfx_volume"] = m->getSavedValue<double>("render_sfx_volume");
         json["music_volume"] = m->getSavedValue<double>("render_music_volume");

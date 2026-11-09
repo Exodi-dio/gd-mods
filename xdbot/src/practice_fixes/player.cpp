@@ -1,12 +1,16 @@
 #include "practice_fixes.hpp"
 
+#ifdef _MSC_VER
+#pragma optimize("", off)
+#endif
+
 PlayerData PlayerPracticeFixes::saveData(PlayerObject* player) {
     PlayerData data;
 
     #ifdef GEODE_IS_WINDOWS
 
     data.m_rotateObjectsRelated.insert(player->m_rotateObjectsRelated.begin(), player->m_rotateObjectsRelated.end());
-    data.m_maybeRotatedObjectsMap.insert(player->m_maybeRotatedObjectsMap.begin(), player->m_maybeRotatedObjectsMap.end());
+    // data.m_maybeRotatedObjectsMap.insert(player->m_maybeRotatedObjectsMap.begin(), player->m_maybeRotatedObjectsMap.end());
     data.m_touchedRings.insert(player->m_touchedRings.begin(), player->m_touchedRings.end());
     data.m_ringRelatedSet.insert(player->m_ringRelatedSet.begin(), player->m_ringRelatedSet.end());
     data.m_jumpPadRelated.insert(player->m_jumpPadRelated.begin(), player->m_jumpPadRelated.end());
@@ -260,7 +264,7 @@ void PlayerPracticeFixes::applyData(PlayerObject* player, PlayerData data, bool 
     #ifdef GEODE_IS_WINDOWS
 
     player->m_rotateObjectsRelated.insert(data.m_rotateObjectsRelated.begin(), data.m_rotateObjectsRelated.end());
-    player->m_maybeRotatedObjectsMap.insert(data.m_maybeRotatedObjectsMap.begin(), data.m_maybeRotatedObjectsMap.end());
+    // player->m_maybeRotatedObjectsMap.insert(data.m_maybeRotatedObjectsMap.begin(), data.m_maybeRotatedObjectsMap.end());
     player->m_touchedRings.insert(data.m_touchedRings.begin(), data.m_touchedRings.end());
     player->m_ringRelatedSet.insert(data.m_ringRelatedSet.begin(), data.m_ringRelatedSet.end());
     player->m_jumpPadRelated.insert(data.m_jumpPadRelated.begin(), data.m_jumpPadRelated.end());
@@ -494,3 +498,7 @@ void PlayerPracticeFixes::applyData(PlayerObject* player, PlayerData data, bool 
     player->setPosition(data.position);
     player->setRotation(data.rotation);
 }
+
+#ifdef _MSC_VER
+#pragma optimize("", on)
+#endif
