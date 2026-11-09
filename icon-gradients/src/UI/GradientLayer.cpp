@@ -614,7 +614,6 @@ void GradientLayer::scrollWheel(float y, float) {
 
     return true;
     return true;
-    return true;
 }
 
 bool GradientLayer::init() {
