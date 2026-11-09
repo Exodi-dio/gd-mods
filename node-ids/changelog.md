@@ -1,4 +1,7 @@
 # Node IDs Changelog
+## v1.23.4
+* Fix pause crash when start position objects are missing
+
 ## v1.23.3
 * Fix link controls positioning on mobile
 * Fix buttons not getting added to bottom menu in ProfilePage if user does not have messages enabled

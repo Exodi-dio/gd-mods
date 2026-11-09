@@ -19,6 +19,7 @@ $register_ids(PauseLayer) {
         );
         idx += 2;
         auto pl = PlayLayer::get();
+        if (!pl) return;
         auto level = pl->m_level;
         auto controller = PlatformToolbox::isControllerConnected();
         auto practice = pl->m_isPracticeMode;
@@ -96,7 +97,8 @@ $register_ids(PauseLayer) {
             }
         }
 
-        bool hasStartPos = level->m_levelType == GJLevelType::Editor || pl->getStartPosObjectsForCurrentMode()->count() > 0;
+        auto* startPosObjects = pl->getStartPosObjectsForCurrentMode();
+        bool hasStartPos = level->m_levelType == GJLevelType::Editor || (startPosObjects && startPosObjects->count() > 0);
         if(hasStartPos) {
             setIDs(
                 layer,
