@@ -91,7 +91,7 @@ $register_ids(PauseLayer) {
 
         if (level->m_levelType != GJLevelType::Editor && !practice) {
             for (int i = 1; i <= level->m_coins; i++) {
-                setIDSafe(layer, idx, fmt::format("coin-{}", i));
+                setIDSafe(layer, idx, fmt::format("coin-{}", i).c_str());
                 idx++;
             }
         }

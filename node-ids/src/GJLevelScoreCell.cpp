@@ -20,7 +20,7 @@ $register_ids(GJLevelScoreCell) {
 	);
 
 	for (int i = 0; i < coins; i++) {
-		setIDSafe(m_mainLayer, 4 + i, fmt::format("user-coin-{}", i + 1));
+		setIDSafe(m_mainLayer, 4 + i, fmt::format("user-coin-{}", i + 1).c_str());
 	}
 	
 	setIDSafe(m_mainLayer, 4 + coins, "date-label");

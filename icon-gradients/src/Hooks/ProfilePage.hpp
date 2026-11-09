@@ -23,6 +23,4 @@ class $modify(ProProfilePage, ProfilePage) {
 
 	void getUserInfoFinished(GJUserScore*);
 
-	void toggleShip(CCObject*);
-
 };
