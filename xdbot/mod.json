@@ -11,7 +11,7 @@
 	"dependencies": {
 		"eclipse.ffmpeg-api": {
 			"version": ">=v2.0.0",
-			"importance": "suggested",
+			"importance": "required",
 			"platforms": [
 				"android"
 			]
