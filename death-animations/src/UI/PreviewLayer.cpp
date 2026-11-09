@@ -3,10 +3,6 @@
 
 #include "PreviewLayer.hpp"
 
-#define MORE_ICONS_EVENTS // required according to jasmine, required before header include --raydeeux
-
-#include <hiimjustin000.more_icons/include/MoreIcons.hpp>
-
 PreviewLayer::~PreviewLayer() {
     if (m_circleWave)
         m_circleWave->release();
@@ -205,9 +201,6 @@ bool PreviewLayer::init() {
     m_player->updateColors();
     
     m_mainLayer->addChild(m_player);
-    
-    if (Loader::get()->isModLoaded("hiimjustin000.more_icons"))
-        more_icons::updateSimplePlayer(m_player, more_icons::activeIcon(IconType::Cube, false));
     
     m_time = (m_spike->getPositionX() - m_player->getPositionX()) * 0.003625f;
         

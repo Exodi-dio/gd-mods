@@ -21,11 +21,7 @@
   		"content"
   	],
     "dependencies": {
-  		"geode.node-ids": ">=1.23.1",
-        "hiimjustin000.more_icons": {
-            "version": ">=2.1.0",
-            "required": false
-        }
+  		"geode.node-ids": ">=1.23.1"
     },
     "resources": {
         "spritesheets": {
