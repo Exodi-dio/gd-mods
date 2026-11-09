@@ -303,14 +303,14 @@ public:
             m_playLayer->m_skipCameraShake = false;
 
             m_ogUnkUint64_1 = m_playLayer->m_gameState.m_unkUint64_1;
-            m_ogUnkPoint34 = m_playLayer->m_gameState.m_unkPoint34;
+            m_ogUnkPoint34 = m_playLayer->m_gameState.m_cameraShakeOffset;
             m_ogCameraShakeFactor = m_playLayer->m_gameState.m_cameraShakeFactor;
             m_ogUnkUint15 = m_playLayer->m_gameState.m_unkUint15;
             m_ogUnkUint16 = m_playLayer->m_gameState.m_unkUint16;
             m_ogStaticCameraShake = m_playLayer->m_staticCameraShake;
 
             m_playLayer->m_gameState.m_unkUint64_1 = 0;
-            m_playLayer->m_gameState.m_unkPoint34 = CCPoint{0, 0};
+            m_playLayer->m_gameState.m_cameraShakeOffset = CCPoint{0, 0};
             m_playLayer->m_gameState.m_cameraShakeFactor = shakeDuration;
             m_playLayer->m_gameState.m_unkUint15 = 3.f;
             m_playLayer->m_gameState.m_unkUint16 = 0.f;
@@ -338,7 +338,7 @@ public:
             
             if (!m_isPractice) {
                 m_playLayer->m_gameState.m_unkUint64_1 = m_ogUnkUint64_1;
-                m_playLayer->m_gameState.m_unkPoint34 = m_ogUnkPoint34;
+                m_playLayer->m_gameState.m_cameraShakeOffset = m_ogUnkPoint34;
                 m_playLayer->m_gameState.m_cameraShakeFactor = m_ogCameraShakeFactor;
                 m_playLayer->m_gameState.m_unkUint15 = m_ogUnkUint15;
                 m_playLayer->m_gameState.m_unkUint16 = m_ogUnkUint16;
