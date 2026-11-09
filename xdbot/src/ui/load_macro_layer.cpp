@@ -158,7 +158,7 @@ LoadMacroLayer *LoadMacroLayer::create(geode::Popup *layer,
 
 void LoadMacroLayer::onImportMacroFinished(file::PickResult res) {
   if (res.isOk() && res.unwrap().has_value()) {
-    std::filesystem::path path = res.unwrap().value();
+    std::filesystem::path path = res.unwrap().value().toStdPath().unwrapOrDefault();
 
     auto &g = Global::get();
     Macro tempMacro;
