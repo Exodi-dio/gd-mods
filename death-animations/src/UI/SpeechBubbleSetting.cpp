@@ -10,8 +10,8 @@ void SpeechBubbleSetting::onSelectorArrow(CCObject* obj) {
 }
 
 void SpeechBubbleSetting::init(float y) {
-    for (const std::filesystem::path& path : Utils::getAllFilesFromFolder(Mod::get()->getSaveDir() / "speech-bubbles", { ".png", ".jpg" }))
-        m_setting.elements.push_back(utils::string::pathToString(path.stem()));
+    for (const std::filesystem::path& path : Utils::getAllFilesFromFolder((Mod::get()->getSaveDir() / "speech-bubbles").string(), { ".png", ".jpg" }))
+        m_setting.elements.push_back(pathToString(path.stem()));
 
     SelectSetting::init(y);
 

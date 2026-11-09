@@ -1,0 +1,242 @@
+#include <Geode/Bindings.hpp>
+#include <Geode/modify/EndLevelLayer.hpp>
+#include <Geode/utils/cocos.hpp>
+#include <Geode/utils/NodeIDs.hpp>
+
+#include "IDCheck.hpp"
+
+using namespace geode::prelude;
+using namespace geode::node_ids;
+
+$register_ids(EndLevelLayer) {
+    m_mainLayer->setID("main-layer");
+    if(auto hideMenu = setIDSafe(this, 1, "hide-layer-menu")) {
+        setIDSafe(hideMenu, 0, "hide-button");
+
+        auto layout = ColumnLayout::create();
+        layout->setAxisReverse(true);
+        layout->setAxisAlignment(AxisAlignment::End);
+
+        hideMenu->ignoreAnchorPointForPosition(false);
+        hideMenu->setAnchorPoint({0.5, 1.0});
+        hideMenu->setContentSize({27, 280});
+        hideMenu->setPositionY(this->getContentHeight() - 6);
+        hideMenu->setLayout(layout);
+    }
+
+    int idx = 0;
+    setIDs(
+        m_mainLayer,
+        idx,
+        "background",
+        "hide-dropdown-menu",
+        "chain-left",
+        "chain-right"
+    );
+    idx += 4;
+
+    if (auto levelTxt = getChildBySpriteFrameName(m_mainLayer, "GJ_levelComplete_001.png")) {
+        levelTxt->setID("level-complete-text");
+        idx += 1;
+    }
+    else if (auto practiceTxt = getChildBySpriteFrameName(m_mainLayer, "GJ_practiceComplete_001.png")) {
+        practiceTxt->setID("practice-complete-text");
+        idx += 1;
+    }
+
+    // idea by alphalaneous, adapted to node IDs by raydeeux
+    // the above comment applies to the contents within the forloop and the vector declaration
+    std::vector<Ref<CCLabelBMFont>> nodesToMove;
+
+    for (auto child : CCArrayExt<CCNode*>(m_mainLayer->getChildren())) {
+        if (auto bmFont = typeinfo_cast<CCLabelBMFont*>(child)) {
+            std::string_view view = bmFont->getString();
+
+            if (view.starts_with("Attempts")) {
+                bmFont->setID("attempts-label");
+                idx += 1;
+                nodesToMove.push_back(bmFont);
+            }
+            else if (view.starts_with("Jumps")) {
+                bmFont->setID("jumps-label");
+                idx += 1;
+                nodesToMove.push_back(bmFont);
+            }
+            else if (view.starts_with("Time")) {
+                bmFont->setID("time-label");
+                idx += 1;
+                nodesToMove.push_back(bmFont);
+            }
+            else if (view.starts_with("Points")) {
+                bmFont->setID("points-label");
+                idx += 1;
+                nodesToMove.push_back(bmFont);
+            }
+        }
+    }
+
+    if (auto endText = typeinfo_cast<CCLabelBMFont*>(m_mainLayer->getChildren()->objectAtIndex(idx))) {
+        endText->setID("end-text");
+        idx += 1;
+    }
+
+    if (auto textArea = typeinfo_cast<TextArea*>(m_mainLayer->getChildren()->objectAtIndex(idx))) {
+        textArea->setID("complete-message");
+        textArea->setPositionY(109); // summary-container's information is FAR more important to risk re-positioning/shrinking down. also literally no one asked for y position 147 when completing a platformer level LMFAO that position is uglier than medusa
+        idx += 1;
+    }
+
+    setIDs(
+        m_mainLayer,
+        idx,
+        "button-menu"
+    );
+    idx += 1;
+
+    auto menu = static_cast<CCMenu*>(m_mainLayer->getChildByID("button-menu"));
+
+    setIDs(
+        menu,
+        0,
+        "retry-button",
+        "exit-button"
+    );
+
+    if (auto editButton = getChildBySpriteFrameName(menu, "GJ_editBtn_001.png")) {
+        editButton->setID("edit-button");
+    }
+    if (auto leaderboardButton = getChildBySpriteFrameName(menu, "GJ_levelLeaderboardBtn_001.png")) {
+        leaderboardButton->setID("leaderboard-button");
+    }
+    if (auto practiceRetryBtn = getChildBySpriteFrameName(menu, "GJ_restartCheckBtn_001.png")) {
+        practiceRetryBtn->setID("practice-retry-button");
+    }
+    if (auto deathTrackerBtn = getChildBySpriteFrameName(menu, "sideBtn_death_001.png")) {
+        deathTrackerBtn->setID("death-tracker-button");
+    }
+
+    int currentCoin = 1; // this is so the first id is coin-1 
+    auto mainLayerChildren = CCArrayExt<CCNode*>(m_mainLayer->getChildren());
+    std::vector<CCPoint> coinPos;
+    for (auto child : mainLayerChildren) {
+        for (auto framename : {
+            "secretCoin_b_01_001.png",
+            "secretCoin_2_b_01_001.png"
+        }) {
+            if (isSpriteFrameName(child, framename)) {
+                child->setID(fmt::format("coin-{}-background", currentCoin));
+                coinPos.push_back(child->getPosition());
+                currentCoin += 1;
+                idx += 1;
+            }
+        }
+    }
+
+    if (currentCoin > 1) {
+        int matchedCoins = 1;
+        // fun fact the controller icon is always set before this one
+        for (auto child : CCArrayExt<CCNode*>(m_coinsToAnimate)) {
+            for (int i = 1; i < currentCoin; i++) {
+                if (child->getID().empty() && child->getPosition() == coinPos[i-1]) {
+                    child->setID(fmt::format("coin-{}-sprite", i));
+                    matchedCoins++;
+                    break;
+                }
+            }
+        }
+        // idx should not be kept the same if they are not matching
+        if (matchedCoins < currentCoin) {
+            // idx is after all the other ids, controller icons are always set after these for some reason?
+            for (int fl = idx; fl < mainLayerChildren.size(); fl++) {
+                if (matchedCoins >= currentCoin) {
+                    break; // escape if finished
+                };
+                auto child = mainLayerChildren[fl];
+                for (int i = 1; i < currentCoin; i++) {
+                    if (child->getID().empty() && child->getPosition() == coinPos[i-1]) {
+                        child->setID(fmt::format("coin-{}-sprite", i));
+                        idx = fl+1; 
+                        matchedCoins++;
+                        break;
+                    };
+                };
+            };
+        }
+    }
+    if (PlatformToolbox::isControllerConnected()) {
+        setIDs(
+            m_mainLayer,
+            idx,
+            "controller-retry-hint",
+            "controller-exit-hint"
+        );
+        idx += 2;
+    }
+    // original code by alphalaneous, adapted to node IDs by raydeeux
+    std::reverse(nodesToMove.begin(), nodesToMove.end());
+
+    CCSize winSize = CCDirector::get()->getWinSize();
+    CCNode* labelContainer = CCNode::create();
+    labelContainer->setPosition({winSize.width/2, winSize.height/2 + 8});
+    labelContainer->setContentSize({200, 90});
+    labelContainer->setAnchorPoint({0.5f, 0.5f});
+    labelContainer->setID("summary-container"); // node ID name agreed by alphalaneous and absolute as of time of writing
+
+    ColumnLayout* layout = ColumnLayout::create();
+    layout->setGap(3);
+    layout->setAutoScale(true); // originally this was set to false. better to leave this here since multiple mods are using it probably
+    layout->setDefaultScaleLimits(.25f, .8f); // for consistency with vanilla label scaling
+    labelContainer->setLayout(layout);
+
+    for (auto node : nodesToMove) {
+        node->removeFromParentAndCleanup(false);
+        labelContainer->addChild(node);
+    }
+
+    labelContainer->updateLayout();
+    m_mainLayer->addChild(labelContainer);
+}
+
+struct EndLevelLayerIDs : Modify<EndLevelLayerIDs, EndLevelLayer> {
+    static void onModify(auto& self) {
+        if (!self.setHookPriority("EndLevelLayer::customSetup", GEODE_ID_PRIORITY)) {
+            log::warn("Failed to set EndLevelLayer::customSetup hook priority, node IDs may not work properly");
+        }
+        if (!self.setHookPriority("EndLevelLayer::showLayer", GEODE_ID_PRIORITY)) {
+            log::warn("Failed to set EndLevelLayer::showLayer hook priority, node IDs may not work properly");
+        }
+    }
+
+    void customSetup() {
+        EndLevelLayer::customSetup();
+
+        NodeIDs::get()->provide(this);
+    }
+
+    void showLayer(bool p0) {
+        EndLevelLayer::showLayer(p0);
+
+        for (auto child : CCArrayExt<CCNode*>(m_mainLayer->getChildren())) {
+            if (auto star = getChildBySpriteFrameName(child, "GJ_bigStar_001.png")) {
+                child->setID("star-container");
+                star->setID("star-sprite");
+                child->getChildByType<CCLabelBMFont>(0)->setID("star-label");
+            }
+            else if (auto moon = getChildBySpriteFrameName(child, "GJ_bigMoon_001.png")) {
+                child->setID("moon-container");
+                moon->setID("moon-sprite");
+                child->getChildByType<CCLabelBMFont>(0)->setID("moon-label");
+            }
+            else if (auto orb = getChildBySpriteFrameName(child, "currencyOrbIcon_001.png")) {
+                child->setID("orb-container");
+                orb->setID("orb-sprite");
+                child->getChildByType<CCLabelBMFont>(0)->setID("orb-label");
+            }
+            else if (auto diamond = getChildBySpriteFrameName(child, "GJ_bigDiamond_001.png")) {
+                child->setID("diamond-container");
+                diamond->setID("diamond-sprite");
+                child->getChildByType<CCLabelBMFont>(0)->setID("diamond-label");
+            }
+        }
+    }
+};

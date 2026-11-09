@@ -593,8 +593,8 @@ CCGLProgram* Utils::createShader(const std::string& key, bool linear, bool blend
     CCGLProgram* program = cache->programForKey(key.c_str());
      
     if (!program || key.empty()) {
-        static std::filesystem::path vertPath = Mod::get()->getResourcesDir() / "position.vert";
-        std::filesystem::path shaderPath = Mod::get()->getResourcesDir() / fmt::format("{}_gradient{}.fsh", linear ? "linear" : "radial", line ? "_line" : blend ? "_blend" : "");
+        static std::filesystem::path vertPath = (Mod::get()->getResourcesDir() / "position.vert").string();
+        std::filesystem::path shaderPath = (Mod::get()->getResourcesDir() / fmt::format("{}_gradient{}.fsh", linear ? "linear" : "radial", line ? "_line" : blend ? "_blend" : "")).string();
 
         if (!std::filesystem::exists(vertPath) || !std::filesystem::exists(shaderPath))
             return nullptr;
@@ -608,7 +608,7 @@ CCGLProgram* Utils::createShader(const std::string& key, bool linear, bool blend
 
         program->initWithVertexShaderFilename(
             vertPath.string().c_str(),
-            shaderPath).c_str(.string()
+            shaderPath.string().c_str()
         );
 
         program->addAttribute(kCCAttributeNamePosition, kCCVertexAttrib_Position);

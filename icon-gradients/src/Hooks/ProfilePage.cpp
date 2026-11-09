@@ -57,3 +57,12 @@ void ProProfilePage::getUserInfoFinished(GJUserScore* p0) {
     });
 }
 
+void ProProfilePage::toggleShip(CCObject* p0) {
+    ProfilePage::toggleShip(p0);
+
+    m_fields->m_isShip = !m_fields->m_isShip;
+
+    Loader::get()->queueInMainThread([this] {
+        updateGradient();
+    });
+}

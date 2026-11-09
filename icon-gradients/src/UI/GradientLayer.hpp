@@ -9,7 +9,7 @@
 #include "ColorNode.hpp"
 #include "PlayerToggle.hpp"
 
-class GradientLayer : public Popup, public ColorPickerDelegate {
+class GradientLayer : public Popup, public ColorPickerDelegate, public TextInputDelegate {
 
 private:
 
@@ -100,7 +100,7 @@ private:
     void colorValueChanged(ccColor3B) override;
     void textChanged(CCTextInputNode*) override;
     void keyDown(enumKeyCodes, double) override;
-    void scrollWheel(float y, float) override;
+    void scrollWheel(float, float) override;
 
 public:
 

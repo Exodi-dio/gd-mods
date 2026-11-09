@@ -55,7 +55,7 @@ private:
             return;
         }
 
-        CCSprite* spr = CCSprite::create(utils::string::pathToString(m_speechBubbles[speechBubble]).c_str());
+        CCSprite* spr = CCSprite::create(pathToString(m_speechBubbles[speechBubble]).c_str());
         spr->setAnchorPoint({0.5f, 1});
         spr->setPosition({m_size.width / 2.f, m_size.height});
 
@@ -118,10 +118,10 @@ private:
     void onSaveImage(CCObject*) {
         if (!m_currentSprite) return;
 
-        std::filesystem::path folder = Mod::get()->getSaveDir() / "screenshots";
+        std::filesystem::path folder = (Mod::get()->getSaveDir() / "screenshots").string();
 
         if (!std::filesystem::exists(folder))
-            if (utils::file::createDirectoryAll(folder).isErr())
+            if (utils::file::createDirectoryAll(folder.string()).isErr())
                 return Notification::create("Fail", NotificationIcon::Error)->show();
 
         CCRenderTexture* renderTexture = CCRenderTexture::create(m_size.width, m_size.height);
@@ -136,7 +136,7 @@ private:
         auto now = std::chrono::system_clock::now();
         auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
 
-        std::string filepath = utils::string::pathToString(
+        std::string filepath = pathToString(
             folder / fmt::format("{}_{}.png", m_isPreview ? "speech_bubble" : m_playLayer->m_level->m_levelName, std::to_string(timestamp))
         );
 
@@ -180,11 +180,11 @@ public:
     }
 
     void start() override {
-        m_speechBubbles = Utils::getAllFilesFromFolder(Mod::get()->getSaveDir() / "speech-bubbles", { ".png", ".jpg" });
+        m_speechBubbles = Utils::getAllFilesFromFolder((Mod::get()->getSaveDir() / "speech-bubbles").string(), { ".png", ".jpg" });
 
         if (m_speechBubbles.empty()) {
             m_speechBubbles.push_back(
-                Mod::get()->getResourcesDir() / "speech-bubble-1.png"
+                (Mod::get()->getResourcesDir() / "speech-bubble-1.png").string()
             );
 
             if (!std::filesystem::exists(m_speechBubbles.front()))

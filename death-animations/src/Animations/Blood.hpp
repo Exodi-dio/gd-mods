@@ -165,7 +165,7 @@ private:
                         CCSprite* spr = CCSprite::createWithSpriteFrameName(fmt::format("blood-drop-{}.png"_spr, bloodDrop.id).c_str());
 
                         if (!spr || spr->getUserObject("geode.texture-loader/fallback")) {
-                            CCSpriteFrameCache::get()->addSpriteFramesWithFile(string::pathToString(Mod::get()->getResourcesDir() / "blood-drops.plist").c_str());
+                            CCSpriteFrameCache::get()->addSpriteFramesWithFile(pathToString(Mod::get()->getResourcesDir() / "blood-drops.plist").c_str());
                             spr = CCSprite::createWithSpriteFrameName(fmt::format("blood-drop-{}.png"_spr, bloodDrop.id).c_str());
                         }
 

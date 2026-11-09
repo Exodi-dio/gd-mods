@@ -20,14 +20,14 @@ private:
 public:
 
     void start() override {
-        std::filesystem::path sound = Utils::getRandomFile(Mod::get()->getSaveDir() / "jumpscare-sounds", { ".mp3", ".ogg", ".wav" });
-        std::filesystem::path image = Utils::getRandomFile(Mod::get()->getSaveDir() / "jumpscare-images", { ".png", ".jpg" });
+        std::filesystem::path sound = Utils::getRandomFile((Mod::get()->getSaveDir() / "jumpscare-sounds").string(), { ".mp3", ".ogg", ".wav" });
+        std::filesystem::path image = Utils::getRandomFile((Mod::get()->getSaveDir() / "jumpscare-images").string(), { ".png", ".jpg" });
 
         if (sound.empty())
-            sound = Mod::get()->getResourcesDir() / "jumpscare.mp3";
+            sound = (Mod::get()->getResourcesDir() / "jumpscare.mp3").string();
 
         if (image.empty())
-            image = Mod::get()->getResourcesDir() / "jumpscare.png";
+            image = (Mod::get()->getResourcesDir() / "jumpscare.png").string();
 
         if (Utils::getSettingBool(Anim::Jumpscare, "ignore-volume"))
             Utils::playSoundManual(Anim::Jumpscare, m_speed, 1.f, sound);
@@ -38,7 +38,7 @@ public:
         
         addChild(m_backgroundLayer);
         
-        m_jumpcare = CCSprite::create(utils::string::pathToString(image).c_str());
+        m_jumpcare = CCSprite::create(pathToString(image).c_str());
 
         if (!m_jumpcare) return m_backgroundLayer->setVisible(false);
 

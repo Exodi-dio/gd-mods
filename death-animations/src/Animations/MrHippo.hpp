@@ -27,16 +27,16 @@ private:
     }
 
     void playSpeech(float) {
-        std::filesystem::path path = Mod::get()->getResourcesDir() / fmt::format("hippo-{}.opus", m_speech);
+        std::filesystem::path path = (Mod::get()->getResourcesDir() / fmt::format("hippo-{}.opus", m_speech)).string();
 
         #ifdef GEODE_IS_WINDOWS
 
         FILE* fp = nullptr;
-        fopen_s(&fp, utils::string::pathToString(path).c_str(), "rb");
+        fopen_s(&fp, pathToString(path).c_str(), "rb");
         
         #else
 
-        FILE* fp = fopen(utils::string::pathToString(path).c_str(), "rb");
+        FILE* fp = fopen(pathToString(path).c_str(), "rb");
 
         #endif
 

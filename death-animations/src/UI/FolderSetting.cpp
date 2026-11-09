@@ -4,10 +4,10 @@
 
 void FolderSetting::onFolder(CCObject* obj) {
     if (!std::filesystem::exists(m_setting.folder))
-        if (utils::file::createDirectoryAll(m_setting.folder).isErr())
+        if (utils::file::createDirectoryAll(m_setting.folder.string()).isErr())
             return;
 
-    file::openFolder(m_setting.folder);
+    file::openFolder(m_setting.folder.string());
 }
 
 void FolderSetting::init(float y) {

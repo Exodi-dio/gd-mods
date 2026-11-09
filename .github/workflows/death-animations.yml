@@ -25,7 +25,7 @@ jobs:
       - name: Build Death Animations
         uses: geode-sdk/build-geode-mod@main
         with:
-          sdk: "nightly"
+          sdk: "latest"
           bindings: "Exodi-dio/bindings"
           bindings-ref: "main"
           path: death-animations

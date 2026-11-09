@@ -40,31 +40,31 @@ $on_mod(Loaded) {
         Mod::get()->setSavedValue("selected-animation", 1);
     
     if (!Mod::get()->setSavedValue("created-jumpscare-folders", true)) {
-        std::filesystem::path soundsFolder = Mod::get()->getSaveDir() / "jumpscare-sounds";
-        std::filesystem::path imagesFolder = Mod::get()->getSaveDir() / "jumpscare-images";
+        std::filesystem::path soundsFolder = (Mod::get()->getSaveDir() / "jumpscare-sounds").string();
+        std::filesystem::path imagesFolder = (Mod::get()->getSaveDir() / "jumpscare-images").string();
         std::error_code ec;
         
-        if (!utils::file::createDirectoryAll(soundsFolder).isErr())
+        if (!utils::file::createDirectoryAll(soundsFolder.string()).isErr())
             std::filesystem::copy_file(
-                Mod::get()->getResourcesDir() / "jumpscare.mp3",
+                (Mod::get()->getResourcesDir() / "jumpscare.mp3").string(),
                 soundsFolder / "jumpscare.mp3",
                 std::filesystem::copy_options::overwrite_existing,
                 ec
             );
 
-        if (!utils::file::createDirectoryAll(imagesFolder).isErr())
+        if (!utils::file::createDirectoryAll(imagesFolder.string()).isErr())
             std::filesystem::copy_file(
-                Mod::get()->getResourcesDir() / "jumpscare.png",
+                (Mod::get()->getResourcesDir() / "jumpscare.png").string(),
                 imagesFolder / "jumpscare.png",
                 std::filesystem::copy_options::overwrite_existing,
                 ec
             );
     } else if (!Mod::get()->setSavedValue("fapped-it-up", true)) {
-        std::filesystem::path imagesFolder = Mod::get()->getSaveDir() / "jumpscare-images";
+        std::filesystem::path imagesFolder = (Mod::get()->getSaveDir() / "jumpscare-images").string();
         std::error_code ec;
         
         std::filesystem::copy_file(
-            Mod::get()->getResourcesDir() / "jumpscare.png",
+            (Mod::get()->getResourcesDir() / "jumpscare.png").string(),
             imagesFolder / "jumpscare.png",
             std::filesystem::copy_options::overwrite_existing,
             ec
@@ -72,15 +72,15 @@ $on_mod(Loaded) {
     }
 
     if (!Mod::get()->setSavedValue("created-speech-bubble-folder2", true)) {
-        std::filesystem::path folder = Mod::get()->getSaveDir() / "speech-bubbles";
+        std::filesystem::path folder = (Mod::get()->getSaveDir() / "speech-bubbles").string();
         
-        if (!utils::file::createDirectoryAll(folder).isErr())
+        if (!utils::file::createDirectoryAll(folder.string()).isErr())
             for (int i = 1; i < 6; i++) {
                 std::string name = fmt::format("speech-bubble-{}.png", i);
                 std::error_code ec;
                 
                 std::filesystem::copy_file(
-                    Mod::get()->getResourcesDir() / name,
+                    (Mod::get()->getResourcesDir() / name).string(),
                     folder / name,
                     std::filesystem::copy_options::overwrite_existing,
                     ec
@@ -90,10 +90,10 @@ $on_mod(Loaded) {
     
     CCSpriteFrameCache* cache = CCSpriteFrameCache::get();
     
-    cache->addSpriteFramesWithFile(string::pathToString(Mod::get()->getResourcesDir() / "blood-drops.plist").c_str());
+    cache->addSpriteFramesWithFile(pathToString(Mod::get()->getResourcesDir() / "blood-drops.plist").c_str());
 
     for (int i = 1; i < 5; i++) {
-        cache->addSpriteFramesWithFile(string::pathToString(Mod::get()->getResourcesDir() / fmt::format("among-us-death-{}.plist", i)).c_str());
+        cache->addSpriteFramesWithFile(pathToString(Mod::get()->getResourcesDir() / fmt::format("among-us-death-{}.plist", i)).c_str());
     }
 }
 

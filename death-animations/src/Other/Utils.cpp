@@ -57,22 +57,22 @@ void Utils::playSound(Anim anim, const std::string& sound, float speed, int fade
     if (duration < 1000) duration = 1000;
             
     FMODAudioEngine::get()->playEffectAdvanced(
-        utils::string::pathToString(Mod::get()->getResourcesDir() / sound).c_str(),
+        pathToString(Mod::get()->getResourcesDir() / sound).c_str(),
         0.f, 0.f, volume, speed, false, false, start, duration, fadeIn, fadeOut, loop, 0, false, false, 0, 0, 0, 0
     );
 }
 
 void Utils::playSound(Anim anim, const std::string& sound, float speed, float volume) {
-    playSound(anim, speed, volume, Mod::get()->getResourcesDir() / sound);
+    playSound(anim, speed, volume, (Mod::get()->getResourcesDir() / sound).string());
 }
 
 void Utils::playSound(Anim anim, float speed, float volume, const std::filesystem::path& sound) {
     if (Utils::getSettingBool(anim, "play-sound-effects"))
-        FMODAudioEngine::get()->playEffect(utils::string::pathToString(sound).c_str(), speed, 1.f, volume);
+        FMODAudioEngine::get()->playEffect(pathToString(sound).c_str(), speed, 1.f, volume);
 }
 
 SoundUpdater* Utils::playSoundManual(Anim anim, const std::string& sound, float speed, float volume) {
-    return playSoundManual(anim, speed, volume, Mod::get()->getResourcesDir() / sound);
+    return playSoundManual(anim, speed, volume, (Mod::get()->getResourcesDir() / sound).string());
 }
 
 SoundUpdater* Utils::playSoundManual(Anim anim, float speed, float volume, const std::filesystem::path& sound) {
@@ -83,7 +83,7 @@ SoundUpdater* Utils::playSoundManual(Anim anim, float speed, float volume, const
     FMOD::Sound* souwnd;
     FMOD::Channel* channel;
     
-    system->createSound(utils::string::pathToString(sound).c_str(), FMOD_DEFAULT, nullptr, &souwnd);
+    system->createSound(pathToString(sound).c_str(), FMOD_DEFAULT, nullptr, &souwnd);
     system->playSound(souwnd, nullptr, false, &channel);
     channel->setVolume(volume);
     channel->setPitch(speed);
@@ -230,7 +230,7 @@ std::vector<std::filesystem::path> Utils::getAllFilesFromFolder(const std::files
         if (ec) return std::vector<std::filesystem::path>{};
 
         if (std::filesystem::is_regular_file(file.status(ec)) && !ec)
-            if (validExtensions.contains(utils::string::pathToString(file.path().extension())))
+            if (validExtensions.contains(pathToString(file.path().extension())))
                 files.push_back(file.path());
     }
 
