@@ -426,9 +426,9 @@ $execute {
 
   if (!g.mod->setSavedValue("defaults_set_12", true)) {
     g.mod->setSettingValue<asp::fs::Path>(
-        "macros_folder", g.mod->getSaveDir().toStdPath().unwrapOrDefault() / "macros");
+        "macros_folder", g.mod->getSaveDir() / "macros");
     g.mod->setSettingValue<asp::fs::Path>(
-        "autosaves_folder", g.mod->getSaveDir().toStdPath().unwrapOrDefault() / "autosaves");
+        "autosaves_folder", g.mod->getSaveDir() / "autosaves");
   }
 
 #ifdef GEODE_IS_ANDROID
@@ -470,7 +470,7 @@ $execute {
 
   if (!g.mod->setSavedValue("defaults_set3", true)) {
     g.mod->setSettingValue<asp::fs::Path>(
-        "render_folder", g.mod->getSaveDir().toStdPath().unwrapOrDefault() / "renders");
+        "render_folder", g.mod->getSaveDir() / "renders");
     g.mod->setSavedValue("render_file_extension", std::string(".mp4"));
     g.mod->setSavedValue("render_sfx_volume", 1.f);
     g.mod->setSavedValue("render_music_volume", 1.f);
