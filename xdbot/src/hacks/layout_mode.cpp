@@ -29,13 +29,13 @@ class $modify(PlayLayer) {
         obj->setVisible(obj->m_objectID != 2065);
     }
 
-    bool init(GJGameLevel * level, bool b1, bool b2) {
+    bool init(GJGameLevel * level, bool b1) {
         auto& g = Global::get();
 
 #ifdef GEODE_IS_ANDROID
 
         if (robtopLevelIDs.contains(level->m_levelID.value()))
-            return PlayLayer::init(level, b1, b2);
+            return PlayLayer::init(level, b1);
 
 #endif
 
@@ -45,7 +45,7 @@ class $modify(PlayLayer) {
         if (g.layoutMode)
             level->m_levelString = LayoutMode::getModifiedString(level->m_levelString);
 
-        if (!PlayLayer::init(level, b1, b2)) {
+        if (!PlayLayer::init(level, b1)) {
             if (g.layoutMode)
                 level->m_levelString = oldString;
 

@@ -425,9 +425,9 @@ $execute {
   }
 
   if (!g.mod->setSavedValue("defaults_set_12", true)) {
-    g.mod->setSettingValue<std::filesystem::path>(
+    g.mod->setSettingValue<asp::fs::Path>(
         "macros_folder", g.mod->getSaveDir().toStdPath().unwrapOrDefault() / "macros");
-    g.mod->setSettingValue<std::filesystem::path>(
+    g.mod->setSettingValue<asp::fs::Path>(
         "autosaves_folder", g.mod->getSaveDir().toStdPath().unwrapOrDefault() / "autosaves");
   }
 
@@ -469,7 +469,7 @@ $execute {
   }
 
   if (!g.mod->setSavedValue("defaults_set3", true)) {
-    g.mod->setSettingValue<std::filesystem::path>(
+    g.mod->setSettingValue<asp::fs::Path>(
         "render_folder", g.mod->getSaveDir().toStdPath().unwrapOrDefault() / "renders");
     g.mod->setSavedValue("render_file_extension", std::string(".mp4"));
     g.mod->setSavedValue("render_sfx_volume", 1.f);
