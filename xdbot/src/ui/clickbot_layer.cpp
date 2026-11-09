@@ -29,7 +29,7 @@ bool ClickbotLayer::setup() {
     m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
     m_title->setPosition(m_title->getPosition() + offset);
 
-	Utils::setBackgroundColor(m_bgSprite);
+	// Utils::setBackgroundColor(m_bgSprite);
 
 	CCMenu* menu = CCMenu::create();
 	m_mainLayer->addChild(menu);
@@ -287,7 +287,10 @@ bool ClickbotLayer::setup() {
 
 ClickSettingsLayer* ClickSettingsLayer::create(std::string button, geode::Popup* layer) {
 	ClickSettingsLayer* ret = new ClickSettingsLayer();
-	if (ret->initAnchored(250, 173, button, layer, Utils::getTexture().c_str())) {
+	ret->button = button;
+	ret->clickbotLayer = layer;
+	if (ret->init(250, 173, Utils::getTexture().c_str())) {
+		ret->setup();
 		ret->autorelease();
 		return ret;
 	}
@@ -296,19 +299,19 @@ ClickSettingsLayer* ClickSettingsLayer::create(std::string button, geode::Popup*
 	return nullptr;
 }
 
-bool ClickSettingsLayer::setup(std::string button, geode::Popup* layer) {
+bool ClickSettingsLayer::setup() {
 	cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;
     m_mainLayer->setPosition(m_mainLayer->getPosition() - offset);
     m_closeBtn->setPosition(m_closeBtn->getPosition() + offset);
     m_bgSprite->setPosition(m_bgSprite->getPosition() + offset);
 	
-	Utils::setBackgroundColor(m_bgSprite);
+	// Utils::setBackgroundColor(m_bgSprite);
 
 	CCMenu* menu = CCMenu::create();
 	m_mainLayer->addChild(menu);
 
 	this->button = button;
-	this->clickbotLayer = layer;
+	this->clickbotLayer = clickbotLayer;
 
 	matjson::Value data = Mod::get()->getSavedValue<matjson::Value>(button);
 	settings = matjson::Serialize<ClickSetting>::from_json(data);
@@ -402,15 +405,9 @@ void ClickSettingsLayer::onSelectFile(CCObject*) {
 	textFilter.files = { "*.mp3", "*.ogg" };
 	fileOptions.filters.push_back(textFilter);
 
-	geode::async::spawn(
-		file::pick(file::PickMode::OpenFile, { Mod::get()->getResourcesDir(), { textFilter } }),
-		[this](geode::Result<std::optional<asp::fs::Path>> res) {
-			if (!res.isOk()) return;
-
-			std::optional<asp::fs::Path> picked = res.unwrapOrDefault();
-			if (!picked.has_value()) return;
-
-			std::filesystem::path path = picked->toStdPath().unwrapOrDefault();
+	geode::async::spawn(file::pick(file::PickMode::OpenFile, { Mod::get()->getResourcesDir(), { textFilter } }), [this](file::PickResult res) {
+		if (res.isOk() && res.unwrap().has_value()) {
+			std::filesystem::path path = res.unwrap().value();
 
 			filenameLabel->setString(path.filename().string().c_str());
 
@@ -419,7 +416,7 @@ void ClickSettingsLayer::onSelectFile(CCObject*) {
 
 			static_cast<ClickbotLayer*>(clickbotLayer)->updateLabels();
 		}
-	);
+		});
 }
 
 void ClickSettingsLayer::onRestore(CCObject*) {
@@ -433,7 +430,7 @@ void ClickSettingsLayer::onRestore(CCObject*) {
 
 	settings.disabled = false;
 	
-	std::filesystem::path path = (Mod::get()->getResourcesDir() / fmt::format("default_{}.mp3", button)).toStdPath().unwrapOrDefault();
+	std::filesystem::path path = Mod::get()->getResourcesDir().toStdPath().unwrapOrDefault() / fmt::format("default_{}.mp3", button);
 
 	filenameLabel->setString(path.filename().string().c_str());
 

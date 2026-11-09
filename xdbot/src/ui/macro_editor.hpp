@@ -11,7 +11,7 @@ struct InputText {
     std::string action;
 };
 
-class MacroEditLayer : public PopupCompat<> {
+class MacroEditLayer : public geode::Popup {
 
 private:
     

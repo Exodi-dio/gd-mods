@@ -39,7 +39,7 @@ public:
 	void selectMacro(bool single);
 };
 
-class LoadMacroLayer : public PopupCompat<geode::Popup*, geode::Popup*, bool> {
+class LoadMacroLayer : public geode::Popup {
 public:
 
 	geode::Popup* menuLayer = nullptr;
@@ -68,7 +68,7 @@ public:
 
 	static LoadMacroLayer* create(geode::Popup* layer, geode::Popup* layer2, bool autosaves);
 
-	bool setup(geode::Popup* layer, geode::Popup* layer2, bool autosaves) override;
+	bool setup();
 
 	static void open(geode::Popup* layer, geode::Popup* layer2, bool autosaves = false);
 
@@ -89,6 +89,8 @@ public:
 	void onSelectAll(CCObject*);
 
 	void onImportMacro(CCObject*);
+
+	void onImportMacroFinished(file::PickResult res);
 
 	void updateSort(CCObject*);
 };

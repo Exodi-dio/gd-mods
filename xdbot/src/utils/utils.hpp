@@ -9,6 +9,8 @@ public:
 
     static std::time_t getFileCreationTime(const std::filesystem::path& path);
 
+    static std::vector<std::filesystem::path> readDirectory(const std::filesystem::path& path);
+
     static std::string formatTime(std::time_t time);
 
     static std::string getTexture();
@@ -16,7 +18,6 @@ public:
     static std::string getSimplifiedString(std::string str);
 
     static void setBackgroundColor(cocos2d::extension::CCScale9Sprite* bg);
-    static void setBackgroundColor(geode::NineSlice* bg);
 
     static std::vector<std::string> splitByChar(std::string str, char splitChar);
 

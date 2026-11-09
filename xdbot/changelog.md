@@ -1,8 +1,71 @@
-# v2.4.1
+# v2.6.6
 
-* Added Auto Clicker keybind.
-* Fixed spider being buggy if using Input Fixes.
-* Made render extension default to .mp4 if empty.
+* Added HDR rendering (Libx265 / Hevc_nvenc).
+* Added menu background blur (requires mod).
+* Added a custom keybind for Frame Stepper.
+* Added Frame Stepper Hold functionality (with mobile on-screen button support).
+* Added a Telegram channel icon to the bot menu.
+* Fixed bugs and optimized the exact 1-frame stepper engine.
+
+# v2.6.5
+
+* Added `.gdr2` macro import support.
+* Added built-in custom keybind support for opening the menu and toggling the macro.
+* Added a warning toast for legacy `.gdr` macros not recorded with xdBot.
+* Fixed mobile render settings so audio args and volume can be changed.
+* Removed the render warning/block for CBF.
+* Removed PathFinder Test.
+* Added macro playback support during editor playtest.
+* Added an xdBot menu button to the editor pause layer.
+
+# v2.6.4
+
+* Added an option to disable Auto Safe Mode.
+* Added PathFinder (TEST, works but still rough).
+* Added Ghost Playback (TEST).
+
+# v2.6.3
+
+* Added Auto Swift Click feature (fully automatic click multiplier on press).
+* Implemented Seamless Hold Continuity to fix input drops when loading macros during holds.
+
+# v2.6.1
+
+* Fixed and updated Continue Botting on mobile devices.
+* Added SpeedHack audio support.
+* Added Speed Audio Sync.
+* Completely rewrote the rendering system.
+* Integrated Mobile FFmpeg API for native Android rendering.
+* Fixed Speed Audio synchronization bugs.
+
+# v2.6.0
+
+* Added Confirm to Exit/Edit dialogs.
+* Updated to a new avatar/logo.
+* Resolved out-of-bounds crash on tab 4 and balanced UI elements.
+
+# v2.5.1
+
+* Updated Geode SDK targeting to version 5.3.0
+
+# v2.5.0
+
+* Ported XDBot to Geometry Dash 2.2081.
+* Rewrote the macro system from scratch.
+* Added CBF (Click Between Frames) & CBS support.
+* Added Fast PBO (Pixel Buffer Object) for rendering.
+* Added Async Queue for rendering.
+* Added Hardware Acceleration.
+* Added Manual C++ VFlip.
+* Added better ULTRAFAST rendering argument.
+* Added Macro Continue Botting (resume botting from checkpoints using practice mode).
+* Slightly rewrote the core botting system for better stability.
+* Fixed old potential crashes during rendering.
+* Fixed multi-platform compilation errors for Android, iOS, macOS, and Windows.
+* Enabled C++20 Variable Length Arrays (VLA) extension (`-Wno-vla-cxx-extension`) to fix build errors.
+* Disabled `-Werror` warnings to ensure successful cross-platform compilation.
+* Fixed missing Geode headers and `utils::nodeIds` compatibility blockages.
+* Restructured project for Geode v5 compatibility.
 
 # v2.4.0
 

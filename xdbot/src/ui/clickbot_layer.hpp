@@ -6,7 +6,7 @@
 
 const std::unordered_map<int, std::string> buttons = { {1, ""} };
 
-class ClickSettingsLayer : public PopupCompat<std::string, geode::Popup*> {
+class ClickSettingsLayer : public geode::Popup {
 
 private:
 
@@ -22,7 +22,7 @@ private:
 
     CCMenuItemToggler* disableToggle = nullptr;
 
-    bool setup(std::string button, geode::Popup* layer) override;
+    bool setup();
 
 public:
 
@@ -74,7 +74,7 @@ public:
 };
 
 
-class ClickbotLayer : public PopupCompat<> {
+class ClickbotLayer : public geode::Popup {
 
     Slider* volumeSlider = nullptr;
     Slider* pitchSlider = nullptr;
@@ -84,7 +84,7 @@ class ClickbotLayer : public PopupCompat<> {
 
 private:
 
-    bool setup() override;
+    bool setup();
 
 public:
 

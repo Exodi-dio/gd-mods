@@ -3,16 +3,18 @@
 	"gd": {
 		"android": "2.2091"
 	},
-	"version": "2.4.1",
+	"version": "v2.6.6",
 	"id": "zilko.xdbot",
 	"name": "xdBot",
-	"developer": "Zilkoo",
-	"description": "Best Free Bot fr",
+	"developer": "Zilko & Camellia",
+	"description": "XDBot port for 2.2091",
 	"dependencies": {
-		"geode.custom-keybinds": {
-			"version": ">=v1.10.0",
-			"importance": "required",
-			"platforms": ["win"]
+		"eclipse.ffmpeg-api": {
+			"version": ">=v2.0.0",
+			"importance": "optional",
+			"platforms": [
+				"android"
+			]
 		}
 	},
 	"settings": {
@@ -20,16 +22,51 @@
 			"type": "custom:button",
 			"name": "Open Menu"
 		},
+		"keybinds-title": {
+			"type": "title",
+			"name": "Keybinds"
+		},
+		"keybind_open_menu": {
+			"type": "keybind",
+			"name": "Open Menu",
+			"description": "Opens or closes the xdBot menu.",
+			"default": [
+				"LeftMenu",
+				"RightMenu"
+			]
+		},
+		"keybind_toggle_stepper": {
+			"type": "keybind",
+			"name": "Toggle Frame Stepper",
+			"description": "Turns the frame stepper on or off.",
+			"default": "K"
+		},
+		"keybind_step_forward": {
+			"type": "keybind",
+			"name": "Step Forward",
+			"description": "Steps one frame forward when the frame stepper is enabled.",
+			"default": "G"
+		},
+		"keybind_hold_forward": {
+			"type": "keybind",
+			"name": "Hold Forward",
+			"description": "Continuously steps forward.",
+			"default": "H"
+		},
 		"macro_accuracy": {
 			"type": "string",
 			"name": "Accuracy",
 			"default": "Frame Fixes",
-			"one-of": ["Vanilla", "Input Fixes", "Frame Fixes"]
+			"one-of": [
+				"Vanilla",
+				"Input Fixes",
+				"Frame Fixes"
+			]
 		},
 		"frame_offset": {
 			"name": "Frame Offset",
 			"description": "Adds a frame offset when recording or playing macros",
-			"type": "int", 
+			"type": "int",
 			"default": 0,
 			"min": -8,
 			"max": 8
@@ -38,14 +75,16 @@
 			"name": "Button at Endscreen",
 			"description": "Shows the menu button at the endscreen.",
 			"type": "bool",
-			"default": false 
+			"default": false
 		},
 		"ffmpeg_path": {
 			"name": "ffmpeg.exe Path",
 			"description": "The path for ffmpeg.exe, needed to use render.",
 			"type": "file",
 			"default": "",
-			"platforms": ["win"]
+			"platforms": [
+				"win"
+			]
 		},
 		"macros_folder": {
 			"name": "Macro Save Location",
@@ -63,30 +102,36 @@
 			"default": "{gd_dir}/renders"
 		},
 		"background_color": {
-            "name": "Menu background color",
-            "type": "color",
-            "default": "#334499"
-        },
+			"name": "Menu background color",
+			"type": "color",
+			"default": "#334499"
+		},
 		"editor_keybinds": {
 			"name": "Keybinds on editor",
 			"description": "Enables keybinds while on the level editor.",
 			"type": "bool",
 			"default": false,
-			"platforms": ["win"]
+			"platforms": [
+				"win"
+			]
 		},
 		"disable_keybinds": {
 			"name": "Disable keybinds",
 			"description": "Disables all keybinds.",
 			"type": "bool",
 			"default": false,
-			"platforms": ["win"]
+			"platforms": [
+				"win"
+			]
 		},
 		"recording_only_keybinds": {
 			"name": "Keybinds only while recording",
 			"description": "Keybinds only work while recording a macro.",
 			"type": "bool",
 			"default": false,
-			"platforms": ["win"]
+			"platforms": [
+				"win"
+			]
 		},
 		"level_settings_button": {
 			"name": "Show Button At Settings",
@@ -124,23 +169,94 @@
 			"description": "Locks the delta.",
 			"type": "bool",
 			"default": false
+		},
+		"nakomod_pbo": {
+			"name": "NakoMod: Fast PBO Frame Capture",
+			"description": "Asynchronously reads frames from the GPU to prevent game freezes during rendering. Speeds up rendering significantly.",
+			"type": "bool",
+			"default": true
+		},
+		"nakomod_multithreading": {
+			"name": "NakoMod: Multithreaded Render Queue",
+			"description": "Sends captured frames to a background thread queue instead of blocking the game process.",
+			"type": "bool",
+			"default": true
+		},
+		"nakomod_hw_accel": {
+			"name": "NakoMod: Hardware Acceleration",
+			"description": "Selects the video codec. CPU is the slowest, NVIDIA/AMD uses your GPU video chip.",
+			"type": "string",
+			"default": "CPU",
+			"one-of": [
+				"CPU",
+				"NVIDIA (NVENC)",
+				"AMD (AMF)",
+				"Intel (QSV)"
+			]
+		},
+		"nakomod_aggressive_presets": {
+			"name": "NakoMod: Aggressive Presets (CPU)",
+			"description": "Sets FFmpeg to 'ultrafast'. Massive speed boost for CPU rendering at the cost of larger file size.",
+			"type": "bool",
+			"default": true
+		},
+		"nakomod_vflip_manual": {
+			"name": "NakoMod: Fast C++ VFlip",
+			"description": "Flips the image in code instead of using FFmpeg's video filter. Saves filtering time.",
+			"type": "bool",
+			"default": true
+		},
+		"macro_step_shift_enabled": {
+			"name": "Custom Step Size",
+			"description": "Enables holding Shift to step a custom amount of frames.",
+			"type": "bool",
+			"default": false
+		},
+		"macro_step_shift_size": {
+			"name": "Step Size Amount",
+			"description": "Amount of frames to step when holding shift.",
+			"type": "int",
+			"default": 10,
+			"min": 1,
+			"max": 100
+		},
+		"macro_hold_step_enabled": {
+			"name": "Frame St. Hold",
+			"description": "Enables custom hold step sizes.",
+			"type": "bool",
+			"default": false
+		},
+		"macro_hold_step_size": {
+			"name": "Hold Step Amount",
+			"description": "How many frames to step forward per tick while holding the frame stepper key.",
+			"type": "int",
+			"default": 1,
+			"min": 1,
+			"max": 100
 		}
 	},
 	"resources": {
-        "sprites": [
-            "resources/GJ_commentSide2_001_White.png",
-            "resources/GJ_commentTop2_001_White.png"
-        ],
+		"sprites": [
+			"resources/GJ_commentSide2_001_White.png",
+			"resources/GJ_commentTop2_001_White.png",
+			"resources/telegram.png"
+		],
 		"files": [
-            "resources/default_hold_click.mp3",
-            "resources/default_release_click.mp3",
+			"resources/default_hold_click.mp3",
+			"resources/default_release_click.mp3",
 			"resources/default_hold_left.mp3",
-            "resources/default_release_left.mp3",
-            "resources/default_hold_right.mp3",
-            "resources/default_release_right.mp3"
-        ]
-    },
-	"links": { "source": "https://github.com/ZiLko/xdBot", "community": "https://discord.gg/w6yvdzVzBd" },
-	"tags": ["gameplay", "utility", "cheat"]
-
+			"resources/default_release_left.mp3",
+			"resources/default_hold_right.mp3",
+			"resources/default_release_right.mp3"
+		]
+	},
+	"links": {
+		"source": "https://github.com/ZiLko/xdBot",
+		"community": "https://discord.gg/w6yvdzVzBd"
+	},
+	"tags": [
+		"gameplay",
+		"utility",
+		"cheat"
+	]
 }

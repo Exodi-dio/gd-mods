@@ -15,8 +15,8 @@
  * Safe Mode.
  * Renderer.
  * Instant Respawn.
- * No Respawn Flash.
- * No Death Effect.
+ * No respawn flash.
+ * No death effect.
  * Macro saving and loading system.
  * Macro Auto Saving.
 

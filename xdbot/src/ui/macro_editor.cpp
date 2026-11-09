@@ -1,11 +1,13 @@
 #include "macro_editor.hpp"
 #include "record_layer.hpp"
 
-#include <Geode/modify/CCEGLView.hpp>
 #include <Geode/modify/FLAlertLayer.hpp>
 
 MacroEditLayer* editLayer = nullptr;
 
+// NOTE: onGLFWMouseMoveCallBack is inlined in Geode v5 and can't be hooked.
+// Hover tracking in macro editor is disabled until an alternative is implemented.
+#if 0
 #ifdef GEODE_IS_WINDOWS
 
 class $modify(CCEGLView) {
@@ -25,6 +27,7 @@ class $modify(CCEGLView) {
     }
 };
 
+#endif
 #endif
 
 class $modify(FLAlertLayer) {
@@ -114,7 +117,7 @@ void MacroEditLayer::updateHover(cocos2d::CCPoint pos) {
 }
 
 bool MacroEditLayer::setup() {
-    Utils::setBackgroundColor(m_bgSprite);
+    // Utils::setBackgroundColor(m_bgSprite);
     
     CCMenu* menu = CCMenu::create();
     menu->setID("main-menu");
@@ -875,7 +878,7 @@ void MacroEditLayer::onSave(CCObject*) {
         "Apply",
         "Apply <cl>changes</c> to current macro?" + extension,
         "Cancel", "Yes",
-        [this](auto, bool btn2) {
+        [this](FLAlertLayer*, bool btn2) {
             if (!btn2) return;
 
             auto& g = Global::get();
@@ -888,9 +891,11 @@ void MacroEditLayer::onSave(CCObject*) {
 
             CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
             CCObject* child;
-            for (auto child_it : CCArrayExt<CCObject*>(children)) { child = static_cast<CCObject*>(child_it);
+            for (auto child : CCArrayExt<CCObject*>(children)) {
                 if (RecordLayer* layer = typeinfo_cast<RecordLayer*>(child)) {
-                    static_cast<FLAlertLayer*>(layer)->keyBackClicked();
+                    layer->setKeypadEnabled(false);
+                    layer->setTouchEnabled(false);
+                    layer->removeFromParentAndCleanup(true);
                     break;
                 }
             }
@@ -901,7 +906,7 @@ void MacroEditLayer::onSave(CCObject*) {
             Loader::get()->queueInMainThread([] {
                 CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
                 CCObject* child;
-                for (auto child_it : CCArrayExt<CCObject*>(children)) { child = static_cast<CCObject*>(child_it);
+                for (auto child : CCArrayExt<CCObject*>(children)) {
                     if (MacroEditLayer* layer = typeinfo_cast<MacroEditLayer*>(child)) {
                         editLayer = layer;
                         break;
@@ -959,7 +964,7 @@ void MacroEditLayer::onMerge(CCObject*) {
     else {
         CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
         CCObject* child;
-        for (auto child_it : CCArrayExt<CCObject*>(children)) { child = static_cast<CCObject*>(child_it);
+        for (auto child : CCArrayExt<CCObject*>(children)) {
             if (typeinfo_cast<RecordLayer*>(child)) {
                 layer = typeinfo_cast<geode::Popup*>(child);
                 break;
