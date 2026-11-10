@@ -1,3 +1,6 @@
+# v2.6.7
+* Fix missing play button on pause menu (hook ordering + fallback).
+
 # v2.6.6
 
 * Added HDR rendering (Libx265 / Hevc_nvenc).

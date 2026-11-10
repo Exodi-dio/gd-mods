@@ -78,6 +78,10 @@ const std::vector<std::vector<RecordSetting>> settings{
      {"Enable Blur:", "menu_enable_blur", InputType::None}}};
 
 class $modify(PauseLayer) {
+  static void onModify(auto &self) {
+    self.setHookPriority("PauseLayer::customSetup", geode::Priority::VeryLate);
+  }
+
   void customSetup() {
     PauseLayer::customSetup();
 
@@ -92,25 +96,25 @@ class $modify(PauseLayer) {
     CCSprite *sprite = nullptr;
 
     sprite = CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
+    if (!sprite)
+      return;
     sprite->setScale(0.35f);
 
     CCMenuItemSpriteExtra *btn = CCMenuItemSpriteExtra::create(
         sprite, this, menu_selector(RecordLayer::openMenu2));
 
-    if (!Loader::get()->isModLoaded("geode.node-ids")) {
-      CCMenu *menu = CCMenu::create();
-      menu->setID("button"_spr);
-      addChild(menu);
+    CCNode *menu = this->getChildByID("right-button-menu");
+    if (!menu) {
+      CCMenu *fallback = CCMenu::create();
+      fallback->setID("button"_spr);
+      addChild(fallback);
       btn->setPosition({214, 88});
-      menu->addChild(btn);
+      fallback->addChild(btn);
       return;
     }
 
-    CCNode *menu = this->getChildByID("right-button-menu");
-    if (menu) {
-      menu->addChild(btn);
-      menu->updateLayout();
-    }
+    menu->addChild(btn);
+    menu->updateLayout();
   }
 };
 
