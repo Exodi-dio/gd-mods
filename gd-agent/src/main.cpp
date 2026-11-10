@@ -155,5 +155,3 @@ $execute {
     geode::listenForSettingChanges<bool>("agent_enabled", +[](bool v) { g_agent_enabled = v; });
     geode::listenForSettingChanges<bool>("frame_step", +[](bool v) { g_frame_step = v; });
 }
-EOF
-echo written
