@@ -30,7 +30,7 @@ float infer(const ModelWeights& w, const Obs& obs) {
     return sigmoid(out);
 }
 
-bool loadWeights(ModelWeights& w, const std::filesystem::path& path) {
+bool loadWeights(ModelWeights& w, const std::string& path) {
     std::ifstream f(path, std::ios::binary);
     if (!f) return false;
     f.read(reinterpret_cast<char*>(&w), sizeof(w));

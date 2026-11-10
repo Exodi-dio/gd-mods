@@ -12,21 +12,21 @@ using namespace geode::prelude;
 static ModelWeights g_weights;
 static bool g_weights_loaded = false;
 static bool g_agent_enabled = false;
-static bool g_frame_step = false; // if true, pause after each frame
-static int g_pending_action = 0; // 0 release, 1 tap
+static bool g_frame_step = false;
+static int g_pending_action = 0;
 static float g_prev_progress = 0.f;
 static bool g_episode_done = false;
+static bool g_holding = false;
 
-// State file paths (for trainer IPC / debugging)
-static std::filesystem::path statePath() {
+static asp::fs::Path statePath() {
     return Mod::get()->getSaveDir() / "agent_state.json";
 }
-static std::filesystem::path actionPath() {
+static asp::fs::Path actionPath() {
     return Mod::get()->getSaveDir() / "agent_action.txt";
 }
 
 static void writeState(PlayLayer* pl, const Obs& obs, float reward, bool done) {
-    std::ofstream f(statePath());
+    std::ofstream f(statePath().string());
     if (!f) return;
     f << "{\n";
     f << "  \"player_y\": " << obs.player_y << ",\n";
@@ -44,34 +44,28 @@ static void writeState(PlayLayer* pl, const Obs& obs, float reward, bool done) {
 }
 
 static int readAction() {
-    std::ifstream f(actionPath());
+    std::ifstream f(actionPath().string());
     if (!f) return 0;
     int a = 0;
     f >> a;
     return a == 1 ? 1 : 0;
 }
 
-// Build observation from PlayLayer
 static Obs buildObs(PlayLayer* pl) {
     Obs o;
     if (!pl || !pl->m_player1) return o;
     auto* p = pl->m_player1;
-    o.player_y = p->getPositionY() / 320.f; // normalize roughly
-    o.player_vy = p->m_yVelocity / 100.f; // rough
+    o.player_y = p->getPositionY() / 320.f;
+    o.player_vy = p->m_yVelocity / 100.f;
     o.on_ground = p->m_isOnGround ? 1.f : 0.f;
-    o.speed = pl->m_gameState.m_levelTime > 0 ? 1.f : 1.f;
+    o.speed = 1.f;
 
-    // Find nearest obstacle ahead of player
+    // Find nearest obstacle ahead of player among PlayLayer children
     float px = p->getPositionX();
     float bestDist = 1e9f;
     float bestY = 0, bestH = 0, bestType = 0;
-    if (pl->m_gameState.m_level) {
-        // iterate objects via PlayLayer's object arrays if available
-        // Fallback: leave defaults; trainer on sim doesn't need this
-    }
-    // Search children of the game layer for GameObjects ahead
-    if (auto* gl = pl->m_gameLayer) {
-        for (auto* child : CCArrayExt<CCNode*>(gl->getChildren())) {
+    if (auto* children = pl->getChildren()) {
+        for (auto* child : CCArrayExt<CCNode*>(children)) {
             if (auto* go = typeinfo_cast<GameObject*>(child)) {
                 float ox = go->getPositionX();
                 if (ox > px && ox - px < bestDist && ox - px < 400.f) {
@@ -100,10 +94,10 @@ class $modify(PlayLayer) {
         g_prev_progress = 0.f;
         g_episode_done = false;
         g_pending_action = 0;
-        // Load weights once
+        g_holding = false;
         if (!g_weights_loaded) {
             auto wpath = Mod::get()->getSaveDir() / "agent_weights.bin";
-            g_weights_loaded = loadWeights(g_weights, wpath);
+            g_weights_loaded = loadWeights(g_weights, wpath.string());
             log::info("GD Agent: weights loaded = {}", g_weights_loaded);
         }
         return true;
@@ -113,38 +107,31 @@ class $modify(PlayLayer) {
         PlayLayer::postUpdate(dt);
         if (!g_agent_enabled) return;
         if (g_episode_done) return;
+        if (!m_player1) return;
 
         Obs obs = buildObs(this);
         float progress = getCurrentPercent();
-        float reward = (progress - g_prev_progress) * 100.f; // progress reward
+        float reward = (progress - g_prev_progress) * 100.f;
         g_prev_progress = progress;
 
-        // Apply pending action from trainer (if file present) OR run inference
         int action = 0;
         if (g_weights_loaded) {
-            float p = infer(g_weights, obs);
-            action = (p > 0.5f) ? 1 : 0;
+            float prob = infer(g_weights, obs);
+            action = (prob > 0.5f) ? 1 : 0;
         } else {
             action = readAction();
         }
 
-        // Apply action
-        if (action == 1) {
-            if (m_player1 && !m_player1->m_isHolding) {
-                handleButton(true, 1, false);
-            }
-        } else {
-            if (m_player1 && m_player1->m_isHolding) {
-                handleButton(false, 1, false);
-            }
+        // Apply action (tap/hold for cube)
+        if (action == 1 && !g_holding) {
+            handleButton(true, 1, false);
+            g_holding = true;
+        } else if (action == 0 && g_holding) {
+            handleButton(false, 1, false);
+            g_holding = false;
         }
 
         writeState(this, obs, reward, false);
-
-        if (g_frame_step) {
-            // pause the game to let trainer sync; trainer resumes via action file
-            // (simple approach: don't auto-resume; trainer writes action then we continue next frame)
-        }
     }
 
     void destroyPlayer(PlayerObject* p, GameObject* obj) {
@@ -164,10 +151,9 @@ class $modify(PlayLayer) {
     }
 };
 
-// Toggle agent on/off via a setting or keybind. For now, enable by default if weights exist.
 $execute {
     geode::listenForSettingChanges<bool>("agent_enabled", +[](bool v) { g_agent_enabled = v; });
     geode::listenForSettingChanges<bool>("frame_step", +[](bool v) { g_frame_step = v; });
 }
 EOF
-echo "written"
+echo written

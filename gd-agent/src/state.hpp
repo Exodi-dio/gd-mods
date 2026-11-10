@@ -48,4 +48,4 @@ struct ModelWeights {
 float infer(const ModelWeights& w, const Obs& obs);
 
 // Load weights from a file (optional). Returns false if missing/invalid.
-bool loadWeights(ModelWeights& w, const std::filesystem::path& path);
+bool loadWeights(ModelWeights& w, const std::string& path);
