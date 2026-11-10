@@ -1,0 +1,50 @@
+numpy
+gymnasium
+stable-baselines3
+torch
+EOF
+cat > /tmp/opencode/gd-mods/gd-agent/trainer/evaluate.py <<'PYEOF'
+"""Evaluate a trained model on the sim."""
+import numpy as np
+from stable_baselines3 import PPO
+from sim import GDEnv
+
+model = PPO.load("gd_agent_ppo")
+env = GDEnv(seed=42)
+obs, _ = env.reset()
+done = False
+total_r = 0
+while not done:
+    action, _ = model.predict(obs, deterministic=True)
+    obs, r, done, trunc, info = env.step(int(action))
+    total_r += r
+    done = done or trunc
+print("progress:", info.get("progress", 0), "reward:", total_r)
+PYEOF
+cat > /tmp/opencode/gd-mods/gd-agent/trainer/README.md <<'EOF'
+# GD Agent Trainer (cube mode)
+
+Train a PPO agent on a minimal Geometry Dash cube physics sim, then export
+weights to `agent_weights.bin` for the `exodi.gd-agent` Geode mod.
+
+## Setup (Kaggle / Colab)
+```bash
+pip install -r requirements.txt
+python train.py          # trains ~2M steps, saves gd_agent_ppo.zip
+python train.py --export # or call export_weights() at the end
+python evaluate.py       # quick sanity check
+```
+
+## Using the trained weights on device
+Copy `agent_weights.bin` to the mod's save dir (Geode creates it on first launch):
+```
+<gd>/geode/mods/exodi.gd-agent/agent_weights.bin   (or the mod save dir)
+```
+The mod loads it automatically on next launch and enables the agent.
+
+## Expanding
+- Add ship/ball/wave/UFO/robot/spider: new physics in sim.py + new action space + retrain.
+- Real-game fine-tuning: enable "Frame Step" in the mod, run trainer against the
+  state/action files in the mod save dir instead of the sim.
+EOF
+echo done
