@@ -17,6 +17,7 @@ Every `.geode` is a combined Android32 + Android64 build. Install with Geode.
 | Node IDs | `geode.node-ids` | [v1.23.4](https://github.com/Exodi-dio/gd-mods/releases/tag/node-ids-v1.23.4-android) |
 | Icon Gradients | `zilko.icon_gradients` | [v1.3.11](https://github.com/Exodi-dio/gd-mods/releases/tag/icon-gradients-v1.3.11-android) |
 | Death Animations | `zilko.death_animations` | [v1.1.4](https://github.com/Exodi-dio/gd-mods/releases/tag/death-animations-v1.1.4-android) |
+| GD Agent | `exodi.gd-agent` | [v0.1.0](https://github.com/Exodi-dio/gd-mods/releases/tag/gd-agent-v0.1.0-android) |
 
 ## Notes
 
