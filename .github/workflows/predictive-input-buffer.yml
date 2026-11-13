@@ -40,31 +40,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
+      - uses: geode-sdk/build-geode-mod/combine@main
+        id: build
 
-      - name: Set up geode CLI
-        uses: robinraju/release-downloader@v1.13
-        with:
-          repository: geode-sdk/cli
-          latest: true
-          tarBall: false
-          zipBall: false
-          fileName: "*-linux.zip"
-          extract: true
-          out-file-path: ./cli
-
-      - run: chmod +x ./cli/geode && echo "$PWD/cli" >> $GITHUB_PATH
-
-      - name: Merge platforms into one .geode
-        run: |
-          geode package merge --zstd \
-            artifacts/geode-build-android32/ai.predictivebuffer.geode \
-            artifacts/geode-build-android64/ai.predictivebuffer.geode
-
-      - uses: actions/upload-artifact@v4
+      - name: Upload merged geode
+        uses: actions/upload-artifact@v4
         with:
           name: Build Output
-          path: ai.predictivebuffer.geode
+          path: ${{ steps.build.outputs.build-output }}/*.geode
