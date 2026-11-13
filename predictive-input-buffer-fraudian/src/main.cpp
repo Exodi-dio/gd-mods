@@ -7,10 +7,15 @@
 #include <Geode/modify/EffectGameObject.hpp>
 #include <Geode/modify/HardStreak.hpp>
 #include <cstdio>
+#include <cstdint>
 #include <algorithm>
 
 #ifdef GEODE_IS_DESKTOP
 extern "C" short __stdcall GetAsyncKeyState(int vKey);
+#endif
+
+#ifdef GEODE_IS_WINDOWS
+#include <Windows.h>
 #endif
 
 using namespace geode::prelude;
@@ -130,10 +135,10 @@ public:
         m_rapidInputStreak = 0;
     }
 
-    // Cycles through the 5 F6 stages:
+    // The 5 stages:
     // 0: 2 All / 2 Wave -> 1: 4 All / 4 Wave -> 2: 8 All / 8 Wave -> 3: 16 All / 8 Wave -> 4: OFF
-    void cyclePreset() {
-        m_presetIndex = (m_presetIndex + 1) % 5;
+    void applyPreset(int index) {
+        m_presetIndex = index % 5;
         m_waitTicks = -1;
         m_queuedOpposite = false;
 
@@ -142,33 +147,37 @@ public:
                 m_enabled = true;
                 m_maxTicksNormal = 2;
                 m_maxTicksWave = 2;
-                printf("[InputBuffer] F6 Cycle -> STAGE 1: 2 Ticks All | 2 Ticks Wave (0.5f @ 60fps)\n");
+                log::info("[InputBuffer] STAGE 1: 2 Ticks All | 2 Ticks Wave (0.5f @ 60fps)");
                 break;
             case 1:
                 m_enabled = true;
                 m_maxTicksNormal = 4;
                 m_maxTicksWave = 4;
-                printf("[InputBuffer] F6 Cycle -> STAGE 2: 4 Ticks All | 4 Ticks Wave (1.0f @ 60fps)\n");
+                log::info("[InputBuffer] STAGE 2: 4 Ticks All | 4 Ticks Wave (1.0f @ 60fps)");
                 break;
             case 2:
                 m_enabled = true;
                 m_maxTicksNormal = 8;
                 m_maxTicksWave = 8;
-                printf("[InputBuffer] F6 Cycle -> STAGE 3: 8 Ticks All | 8 Ticks Wave (2.0f @ 60fps)\n");
+                log::info("[InputBuffer] STAGE 3: 8 Ticks All | 8 Ticks Wave (2.0f @ 60fps)");
                 break;
             case 3:
                 m_enabled = true;
                 m_maxTicksNormal = 16;
                 m_maxTicksWave = 8;
-                printf("[InputBuffer] F6 Cycle -> STAGE 4: 16 Ticks All | 8 Ticks Wave (4.0f / 2.0f @ 60fps)\n");
+                log::info("[InputBuffer] STAGE 4: 16 Ticks All | 8 Ticks Wave (4.0f / 2.0f @ 60fps)");
                 break;
             case 4:
                 m_enabled = false;
                 m_maxTicksNormal = 0;
                 m_maxTicksWave = 0;
-                printf("[InputBuffer] F6 Cycle -> STAGE 5: OFF (100%% Raw Input)\n");
+                log::info("[InputBuffer] STAGE 5: OFF (100% Raw Input)");
                 break;
         }
+    }
+
+    void cyclePreset() {
+        applyPreset((m_presetIndex + 1) % 5);
     }
 
     bool isSimulating() const { return m_simulating; }
@@ -427,8 +436,10 @@ public:
         }
 
         if (bestDelay > 0) {
-            printf("[InputBuffer] *** SAVED +%d TICKS (%.2f frames @ 60fps) %s! (Frame0: %d -> Delayed: %d) [Limit: %d] ***\n",
-                bestDelay, bestDelay / 4.0f, act, ticksFrame0, bestTicks, maxDelayFrames);
+            log::info(
+                "[InputBuffer] *** SAVED +{} TICKS ({:.2f} frames @ 60fps) {}! (Frame0: {} -> Delayed: {}) [Limit: {}] ***",
+                bestDelay, bestDelay / 4.0f, act, ticksFrame0, bestTicks, maxDelayFrames
+            );
             m_bufferedPush = push;
             m_waitTicks = bestDelay;
             return false;
@@ -501,15 +512,20 @@ public:
 static TrajectoryBufferSim s_sim;
 
 $on_mod(Loaded) {
+#ifdef GEODE_IS_WINDOWS
     AllocConsole();
     FILE* f;
     freopen_s(&f, "CONOUT$", "w", stdout);
     SetConsoleTitleA("Geode Predictive Input Buffer - Live Console");
-    printf("============================================================\n");
-    printf(" [InputBuffer] v4.6 LOADED (Wave Spikes/Saws Trajectory Fix)\n");
-    printf(" [InputBuffer] Starting Mode: STAGE 1 (2 All / 2 Wave)\n");
-    printf(" [InputBuffer] Press F6 in-level to cycle: 2/2 -> 4/4 -> 8/8 -> 16/8 -> OFF\n");
-    printf("============================================================\n");
+#endif
+    log::info("[InputBuffer] v4.6 LOADED (Wave Spikes/Saws Trajectory Fix)");
+    log::info("[InputBuffer] Press F6 in-level to cycle: 2/2 -> 4/4 -> 8/8 -> 16/8 -> OFF");
+
+    auto stage = Mod::get()->getSettingValue<int64_t>("stage");
+    s_sim.applyPreset(static_cast<int>(std::clamp<int64_t>(stage, 1, 5)) - 1);
+    listenForSettingChanges<int64_t>("stage", [](int64_t value) {
+        s_sim.applyPreset(static_cast<int>(std::clamp<int64_t>(value, 1, 5)) - 1);
+    });
 }
 
 class $modify(BufPlayLayer, PlayLayer) {
