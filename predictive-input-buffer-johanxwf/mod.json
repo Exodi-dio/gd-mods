@@ -1,0 +1,19 @@
+{
+	"geode": "6.0.0-alpha.1",
+	"gd": {
+		"android": "2.2091"
+	},
+	"version": "v4.7.0",
+	"id": "tuusuario.predictive-input-buffer",
+	"name": "Predictive Input Buffer",
+	"developer": "TuUsuario",
+	"description": "Input buffer with cycling stages via F6 (2/4/8/16 ticks, with a different value for wave).",
+	"settings": {
+		"verbose-log": {
+			"type": "bool",
+			"name": "Verbose log",
+			"description": "Prints each delayed input to the Geode console.",
+			"default": true
+		}
+	}
+}

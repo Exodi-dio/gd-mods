@@ -1,10 +1,10 @@
-name: Build GD Agent
+name: Build Predictive Input Buffer (Johanxwf)
 
 on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
-    tags: [ "gd-agent-v*" ]
+    tags: [ "predictive-input-buffer-johanxwf-v*" ]
 
 jobs:
   build:
@@ -22,26 +22,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build GD Agent
+      - name: Build Predictive Input Buffer (Johanxwf)
         uses: geode-sdk/build-geode-mod@main
         with:
           sdk: "latest"
-          bindings: "Exodi-dio/bindings"
+          bindings: "geode-sdk/bindings"
           bindings-ref: "main"
-          path: gd-agent
+          path: predictive-input-buffer-johanxwf
           target: ${{ matrix.target }}
           build-config: Release
           combine: true
 
   package:
-    name: Package GD Agent
+    name: Package Predictive Input Buffer (Johanxwf)
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+      - uses: actions/checkout@v4
+
       - uses: geode-sdk/build-geode-mod/combine@main
         id: build
+
       - name: Upload merged geode
         uses: actions/upload-artifact@v4
         with:
-          name: gd-agent-geode
+          name: Build Output
           path: ${{ steps.build.outputs.build-output }}/*.geode
