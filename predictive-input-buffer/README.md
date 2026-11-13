@@ -1,91 +1,89 @@
-# Predictive Input Buffer — versión Android (táctil)
+# Predictive Input Buffer - Android (touch) port
 
-Puerto del mod `ai.predictivebuffer` (v4.7) a **Android + Windows**, con interfaz táctil
-estilo QOLMod / Eclipse. Objetivo: Geometry Dash **2.2081** con Geode.
+Port of the `ai.predictivebuffer` mod (v4.7) to **Android + Windows**, with a QOLMod / Eclipse
+style touch interface. Target: Geometry Dash **2.2091** with Geode **6**.
 
-> El `.geode` original solo traía un `.dll` de Windows (código x86-64). Eso no se puede
-> "convertir" a Android: hay que **compilar desde código fuente para ARM**. Como no tenía
-> el código original, lo reconstruí leyendo el binario (ver más abajo).
+> The original `.geode` only shipped a Windows `.dll` (x86-64 code). That cannot be
+> "converted" to Android: the mod has to be **compiled from source for ARM**. The original
+> source was never published, so this port was rebuilt by reading the binary (see below).
 
-## 1) Compilar (gratis, sin instalar nada)
+## 1) Building
 
-1. Crea un repositorio en GitHub (New repository).
-2. Sube **todos** los archivos de esta carpeta, incluida `.github/workflows/build.yml`.
-   - PC: arrastra todo a la página del repo.
-   - Celular: *Add file → Upload files* para los archivos de la raíz y luego
-     *Add file → Create new file*, escribe `.github/workflows/build.yml` y pega su contenido.
-3. Pestaña **Actions** → *Build Geode Mod* → **Run workflow** (también corre solo al subir).
-4. Espera ~10-15 min. Cuando salga en verde: abre la ejecución → **Artifacts** →
-   `Build Output` → descarga el `.geode` (trae Windows + Android 32 y 64 bits).
+The build runs in GitHub Actions:
 
-## 2) Instalar en Android
+1. Push this folder to a GitHub repository (including `.github/workflows`).
+2. Open the **Actions** tab and run the *Build Predictive Input Buffer* workflow.
+3. When the run is green, open it -> **Artifacts** -> `Build Output` and download the `.geode`
+   (Android 32 and 64 bit).
 
-Copia el `.geode` a la carpeta de mods del Geode Launcher
-(normalmente `Android/media/com.geode.launcher/game/geode/mods/`; en launchers antiguos
-`Android/data/com.geode.launcher/files/game/geode/mods/`) y abre GD desde el Geode Launcher.
+## 2) Installing on Android
 
-## 3) Uso (táctil)
+Copy the `.geode` to the Geode Launcher mods folder
+(usually `Android/media/com.geode.launcher/game/geode/mods/`; on older launchers
+`Android/data/com.geode.launcher/files/game/geode/mods/`) and launch GD from the Geode Launcher.
 
-| Dónde | Qué hace |
-|-------|----------|
-| Botón **IB** flotante dentro del nivel | **Tocar** = cambia de etapa `1/1 → 2/2 → 4/4 → 8/8 → 16/8 → OFF` (sustituye a **F6**). **Arrastrar** = moverlo. Parpadea en verde cuando el buffer retrasa un input. |
-| Botón **IB** en el menú de pausa / menú principal | Menú completo: elegir etapa, mostrar/ocultar el botón flotante, opacidad, log. |
+## 3) Usage (touch)
 
-Los ajustes (etapa, posición del botón, opacidad) se guardan entre sesiones.
-En Windows sigue funcionando **F6**.
+| Where | What it does |
+|-------|--------------|
+| Floating **IB** button inside the level | **Tap** = cycle the stage `1/1 -> 2/2 -> 4/4 -> 8/8 -> 16/8 -> OFF` (replaces the **F6** key). **Drag** = move it. It flashes green when the buffer delays an input. |
+| **IB** button in the pause menu / main menu | Full menu: pick a stage, show/hide the floating button, opacity, logging. |
 
-Etapas (1 tick = 1/240 s): **1/1**, **2/2**, **4/4**, **8/8**, **16/8** (todos los modos / wave) y **OFF**.
+Settings (stage, button position, opacity) are saved between sessions.
+**F6** still works on Windows.
 
-## Qué se conservó del original (leído del binario)
+Stages (1 tick = 1/240 s): **1/1**, **2/2**, **4/4**, **8/8**, **16/8** (all modes / wave) and **OFF**.
 
-- Simulación de la trayectoria con 2 jugadores "fantasma" (cubo/bola/etc. y wave/dual).
-- Horizonte de simulación: 48 ticks (28 en mini-wave, 38 en wave).
-- Si el input inmediato sobrevive todo el horizonte → no se toca. Si no, se prueban retrasos.
-  En wave se comparan los candidatos y se elige el que da mayor supervivencia simulada.
-- Wave: se bufferiza press **y** release; robot: también release; resto: solo press.
-- Nave: asistencia conservadora de un tick solo en 1/1; las demás etapas mantienen input crudo.
-  Jugador muerto y spam rápido de clics en wave mantienen sus bypass de seguridad.
-- Durante la simulación se anulan efectos secundarios (saltos contados, estela del wave,
-  brillos, triggers, animación de fin de nivel) y el fantasma solo choca con sólidos,
-  peligros y pendientes.
+## What was kept from the original (read from the binary)
 
-## Mejoras v1.2.1 (wave + etapa 1/1)
+- Trajectory simulation with 2 "ghost" players (cube/ball/etc. and wave/dual).
+- Simulation horizon: 48 ticks (28 in mini-wave, 38 in wave).
+- If the immediate input survives the whole horizon -> it is left untouched. Otherwise delays
+  are tried. In wave the candidates are compared and the one with the longest simulated
+  survival is chosen.
+- Wave: press **and** release are buffered; robot: release too; everything else: press only.
+- Ship: conservative one-tick assist only on 1/1; the other stages keep raw input.
+  A dead player and fast wave click spam keep their safety bypasses.
+- During the simulation side effects are disabled (counted jumps, wave trail, shines, triggers,
+  end of level animation) and the ghost only collides with solids, hazards and pending objects.
 
-- Wave evalúa cada retraso disponible y selecciona el que ofrece mayor supervivencia simulada; si hay empate, elige el retraso menor.
-- El presupuesto se reparte entre la simulación base y los candidatos, en vez de dimensionar el horizonte mirando solo la primera simulación.
-- El límite de tiempo se comprueba dentro del bucle de simulación. Si no queda tiempo para decidir, se envía el input original sin retrasarlo.
-- Se añade la etapa 1/1. En ella, la nave puede recibir un retraso predictivo máximo de un tick; no se generan pulsaciones automáticamente.
-- La lógica de wave sigue activa en todas las etapas con wave habilitado, incluida 16/8.
+## v1.2.1 improvements (wave + 1/1 stage)
 
-## Optimizaciones v1.2.0 (gama media: Helio G85, 4 GB)
+- Wave evaluates every available delay and selects the one with the longest simulated survival;
+  on a tie it picks the shorter delay.
+- The time budget is split between the base simulation and the candidates instead of sizing
+  the horizon from the first simulation only.
+- The time limit is checked inside the simulation loop. If there is no time left to decide,
+  the original input is sent without delay.
+- The 1/1 stage was added. In it the ship can get a predictive delay of at most one tick; no
+  presses are generated automatically.
+- The wave logic stays active on every stage with wave enabled, including 16/8.
 
-- **Presupuesto objetivo de CPU por clic** (menú IB → *CPU budget / click*, por defecto 6 ms):
-  si la predicción no cabe, se deja pasar el input crudo. El deadline se comprueba durante la simulación;
-  el coste de una llamada individual del motor puede hacer que el límite no sea exacto.
-- **Horizonte adaptativo**: mide cuánto cuesta simular 1 tick en tu teléfono y dimensiona el
-  horizonte para el conjunto de candidatos, no solo para la simulación inicial.
-- **Retrasos 1,2,3,4,6,8,10…** en vez de 1,2,3,4,5,6…: ~40 % menos simulaciones en la etapa 4.
-- Los nodos del jugador "fantasma" (partículas/animaciones) quedan **en pausa**: cero trabajo en reposo.
-- Ajustes en caché y estado global; el botón flotante ya no tiene `update` por fotograma
-  (solo mientras parpadea) y su texto siempre cabe dentro del rectángulo.
-- Con *Log saves* activado, cada vez que el buffer actúa el log de Geode muestra cuánto tardó
-  (`us` y `us/tick`) para que puedas ajustar el presupuesto con datos reales.
+## v1.2.0 optimizations (mid-range devices: Helio G85, 4 GB)
 
-## Qué cambió
+- **CPU budget per click** (IB menu -> *CPU budget / click*, 6 ms by default): if the prediction
+  does not fit, the raw input is let through. The deadline is checked during the simulation;
+  a single engine call can make the limit slightly inexact.
+- **Adaptive horizon**: measures how long one simulated tick takes on your phone and sizes the
+  horizon for the whole candidate set, not only for the initial simulation.
+- **Delays 1,2,3,4,6,8,10...** instead of 1,2,3,4,5,6...: ~40% fewer simulations on stage 4.
+- The ghost player nodes (particles/animations) stay **paused**: zero work while idle.
+- Settings are cached in global state; the floating button no longer has a per-frame `update`
+  (only while it flashes) and its text always fits inside the rectangle.
+- With *Log saves* enabled, the Geode log shows how long each buffered click took
+  (`us` and `us/tick`) so the budget can be tuned with real data.
 
-- Tecla F6 → botón táctil (F6 sigue en Windows).
-- Consola de Windows → log de Geode (opción *Log saves*).
-- Los fantasmas viven en un contenedor invisible (así no se ven sus estelas/partículas).
-- Se reinicia el estado al reiniciar el nivel (`resetLevel`).
+## What changed
 
-## Importante / limitaciones
+- F6 key -> touch button (F6 still works on Windows).
+- Windows console -> Geode log (*Log saves* option).
+- The ghosts live in an invisible container (so their trails/particles are not seen).
+- The state is reset when the level restarts (`resetLevel`).
 
-- **No pude compilar con el SDK real de Geode ni probarlo en un teléfono** (mi entorno no
-  tiene red ni NDK). Comprobé la sintaxis y la lógica del búfer con un entorno simulado,
-  pero la primera compilación real puede dar algún error de firma. Si Actions sale en rojo,
-  abre el job que falló y pásame el log: se arregla rápido.
-- La copia de estado jugador → fantasma usa `copyAttributes` (si existe) + campos conocidos;
-  puede diferir ligeramente del original.
-- En móviles lentos la etapa **16/8** hace más simulaciones y puede dar un pequeño tirón:
-  usa 2/2 o 4/4.
-- Si tienes el código fuente original, mándalo y lo adapto 1:1 en vez de esta reconstrucción.
+## Important / limitations
+
+- The player -> ghost state copy uses `copyAttributes` (when available) plus known fields;
+  it can differ slightly from the original.
+- On slow phones the **16/8** stage runs more simulations and can cause a small hitch:
+  use 2/2 or 4/4.
+- If the original source ever shows up, it can be adapted 1:1 instead of this reconstruction.

@@ -1,20 +1,20 @@
-// Predictive Input Buffer  (puerto Windows + Android)   v1.2.1
+// Predictive Input Buffer  (Windows + Android port)   v1.2.1
 //
-// Logica reconstruida a partir del binario original (v4.7 "Zero-Lag + Up Arrow Fix"):
-//   * Al pulsar/soltar se simula la trayectoria con un jugador "fantasma".
-//   * Si el input inmediato es peligroso, se prueban retrasos de 1..N ticks
-//     (1 tick = 1/240 s); wave compara candidatos y elige la mayor supervivencia.
-//   * Etapas: 1/1 -> 2/2 -> 4/4 -> 8/8 -> 16/8 -> OFF  (todos los modos / wave).
-//   * En PC se cambia con F6; en Android con el boton flotante tactil (ui.cpp).
+// Logic rebuilt from the original binary (v4.7 "Zero-Lag + Up Arrow Fix"):
+//   * On press/release the trajectory is simulated with a "ghost" player.
+//   * If the immediate input is dangerous, delays of 1..N ticks are tried
+//     (1 tick = 1/240 s); wave compares candidates and picks the longest survival.
+//   * Stages: 1/1 -> 2/2 -> 4/4 -> 8/8 -> 16/8 -> OFF  (all modes / wave).
+//   * On PC it is changed with F6; on Android with the touch floating button (ui.cpp).
 //
-// Optimizaciones v1.2.0 (pensadas para gama media, p. ej. Helio G85 + 4 GB):
-//   * Presupuesto de CPU por clic: si la prediccion no cabe, se deja pasar el input crudo
-//     (nunca hay un tiron de mas de N ms). Ajustable en el menu (por defecto 6 ms).
-//   * Horizonte adaptativo: se mide cuanto cuesta simular 1 tick en ESTE dispositivo y el
-//     horizonte se acorta para que la primera simulacion use <= 40 % del presupuesto.
-//   * Retrasos de 1,2,3,4,6,8,10... (en vez de 1,2,3,4,5,6...): ~40 % menos simulaciones.
-//   * Los nodos de los fantasmas (particulas, animaciones) se ponen en pausa: cero trabajo en reposo.
-//   * Ajustes en cache y estado global (sin consultas ni guardas de inicializacion por tick).
+// v1.2.0 optimizations (aimed at mid-range devices, e.g. Helio G85 + 4 GB):
+//   * CPU budget per click: if the prediction does not fit, the raw input is let through
+//     (there is never a hitch longer than N ms). Adjustable in the menu (6 ms by default).
+//   * Adaptive horizon: the cost of simulating 1 tick is measured on THIS device and the
+//     horizon is shortened so the first simulation uses <= 40% of the budget.
+//   * Delays of 1,2,3,4,6,8,10... (instead of 1,2,3,4,5,6...): ~40% fewer simulations.
+//   * The ghost nodes (particles, animations) are paused: no work while idle.
+//   * Settings are cached in global state (no lookups or init checks per tick).
 
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PlayLayer.hpp>
@@ -30,7 +30,7 @@
 
 #include "state.hpp"
 
-// reloj en microsegundos (los tests lo sustituyen por uno falso)
+// clock in microseconds (tests replace it with a fake one)
 #ifndef IB_NOW_US
 #define IB_NOW_US() static_cast<std::int64_t>(std::chrono::duration_cast<std::chrono::microseconds>( \
     std::chrono::steady_clock::now().time_since_epoch()).count())
@@ -43,7 +43,7 @@ extern "C" __declspec(dllimport) short __stdcall GetAsyncKeyState(int vKey);
 using namespace geode::prelude;
 
 // ---------------------------------------------------------------------------
-//  Ajustes / etapas
+//  Settings / stages
 // ---------------------------------------------------------------------------
 namespace ib {
 
@@ -75,12 +75,12 @@ namespace ib {
         st.budgetMs = std::clamp(mod->getSavedValue<int>("budget-ms", 6), 1, 30);
         st.showButton = mod->getSavedValue<bool>("show-button", true);
 
-        // Opacidad: permite valores desde 0% hasta 100%.
+        // Opacity: allows values from 0% to 100%.
         st.opacity = std::clamp(mod->getSavedValue<int>("button-opacity", 55), 0, 100);
 
         st.logSaves = mod->getSavedValue<bool>("log-saves", false);
 
-        // Ajustes visuales usados por la interfaz tactil (ui.cpp).
+        // Visual settings used by the touch interface (ui.cpp).
         st.showBg = mod->getSavedValue<bool>("show-bg", true);
         st.colorBg = mod->getSavedValue<int>("color-bg", 0x202040);
         st.colorBorder = mod->getSavedValue<int>("color-border", 0xFFFFFF);
@@ -92,18 +92,18 @@ namespace ib {
                   kStages[st.stage].desc, st.budgetMs);
     }
 
-    // Los ajustes se leen una vez (cache) y se escriben al guardado solo al cambiarlos.
+    // Settings are read once (cached) and written to storage only when they change.
     bool cfgShowButton() { return S().showButton; }
     void cfgSetShowButton(bool v) { S().showButton = v; Mod::get()->setSavedValue<bool>("show-button", v); }
 
-    // Fondo del HUD flotante.
+    // Background of the floating HUD.
     bool cfgShowBg() { return S().showBg; }
     void cfgSetShowBg(bool v) {
         S().showBg = v;
         Mod::get()->setSavedValue<bool>("show-bg", v);
     }
 
-    // Colores personalizados del menu y del HUD.
+    // Custom colors for the menu and the HUD.
     int cfgColorBg() { return S().colorBg; }
     void cfgSetColorBg(int c) {
         S().colorBg = c & 0xFFFFFF;
@@ -165,13 +165,13 @@ $on_mod(Loaded) {
 }
 
 // ---------------------------------------------------------------------------
-//  Utilidades (toleran diferencias entre versiones de los bindings)
+//  Utilities (tolerate differences between binding versions)
 // ---------------------------------------------------------------------------
 namespace ibx {
 namespace {
 
-    // Tipos de objeto que se conservan durante la simulacion:
-    // 0 = solido, 2 = peligro, 25 = pendiente, 39 y 47 (igual que el original)
+    // Object types that are kept during the simulation:
+    // 0 = solid, 2 = hazard, 25 = pending, 39 and 47 (same as the original)
     constexpr std::uint64_t kCollMask = 0x808002000005ull;
 
 #define IB_FLAG(fn, member)                                  \
@@ -229,14 +229,14 @@ namespace {
         }
     }
 
-    // Retrasos que se prueban: 1,2,3,4 y luego de 2 en 2 (6,8,10,...).
-    // A partir de 4 ticks (1 frame @240) la diferencia de 1 tick no se nota y se ahorran simulaciones.
+    // Delays that are tried: 1,2,3,4 and then every 2 (6,8,10,...).
+    // From 4 ticks (1 frame @240) a 1 tick difference is not noticeable, saving simulations.
     constexpr int nextDelay(int d) {
         return d < 4 ? d + 1 : d + 2;
     }
 
-    // Pone en pausa el scheduler y las acciones de todo el arbol: las particulas y animaciones
-    // del fantasma no hacen trabajo en reposo (el fisica se avanza a mano con update()).
+    // Pauses the scheduler and actions of the whole tree: the particles and animations
+    // of the ghost do no work while idle (the physics is advanced manually with update()).
     void pauseTree(CCNode* n) {
         if (!n) return;
         n->pauseSchedulerAndActions();
@@ -247,7 +247,7 @@ namespace {
         }
     }
 
-    // Copia el estado fisico del jugador real al fantasma.
+    // Copies the physical state of the real player to the ghost.
     template <class T>
     void copyState(T* g, T* p) {
         if constexpr (requires { g->copyAttributes(p); }) {
@@ -288,7 +288,7 @@ namespace {
         }
     }
 
-    // Vacia los registros de colision del fantasma entre ticks.
+    // Clears the ghost collision logs between ticks.
     template <class T>
     void clearLogs(T* p) {
         if constexpr (requires { p->m_collisionLogTop; }) {
@@ -333,7 +333,7 @@ namespace {
         }
     }
 
-    // Envia un input "real" al juego saltandose el buffer.
+    // Sends a "real" input to the game, bypassing the buffer.
     void inject(GJBaseGameLayer* pl, bool down) {
         auto& st = ib::S();
         st.injecting = true;
@@ -342,10 +342,10 @@ namespace {
         st.injecting = false;
     }
 
-    // Simula `horizon` ticks despues de aplicar el input (`down`) en el tick `delay`.
-    // Devuelve cuantos ticks sobrevive (horizon = sobrevive todo).
-    //   info.abort    = murio ANTES de que el input se aplique (no tiene sentido retrasar)
-    //   info.timedOut = se paso de `deadlineUs` (reloj en microsegundos): el resultado no vale
+    // Simulates `horizon` ticks after applying the input (`down`) on tick `delay`.
+    // Returns how many ticks it survives (horizon = survived everything).
+    //   info.abort    = died BEFORE the input is applied (delaying makes no sense)
+    //   info.timedOut = passed `deadlineUs` (microsecond clock): the result is invalid
     int simulate(GJBaseGameLayer* pl, PlayerObject* p1, PlayerObject* p2, bool dual,
                  int delay, bool down, int horizon, std::int64_t deadlineUs, ib::SimInfo& info) {
         auto& st = ib::S();
@@ -363,14 +363,14 @@ namespace {
         copyState(g1, p1);
         if (g2) copyState(g2, p2);
 
-        // estado previo al input que se evalua (soltado si es un press, pulsado si es un release)
+        // state before the evaluated input (released on press, held on release)
         applyButton(g1, !down);
         if (g2) applyButton(g2, !down);
 
         float dt = st.stepDt;
         if (!(dt > 0.001f && dt < 2.0f)) dt = 0.25f;
 
-        // modos "hold" (wave / ufo / swing): no se usa el atajo de aterrizaje seguro
+        // "hold" modes (wave / ufo / swing): the safe landing shortcut is not used
         bool holdMode = true;
         if (!flagDart(p1) && !flagBird(p1) && !flagSwing(p1) && !flagShip(p1)) {
             if (!dual || !p2) {
@@ -390,7 +390,7 @@ namespace {
         int deathTick = 0;
 
         for (int i = 0; i < total; ++i) {
-            // Comprueba antes de hacer trabajo caro; como maximo se excede ~1 tick.
+            // Check before doing expensive work; at most ~1 tick is exceeded.
             if ((i & 1) == 0 && IB_NOW_US() >= deadlineUs) {
                 info.timedOut = true;
                 break;
@@ -425,7 +425,7 @@ namespace {
                 ++airTicks;
                 groundStreak = 0;
             } else if (airTicks >= 6) {
-                if (groundStreak > 2) { after = horizon; break; }   // salto completado a salvo
+                if (groundStreak > 2) { after = horizon; break; }   // jump completed safely
                 ++groundStreak;
             }
         }
@@ -433,13 +433,13 @@ namespace {
         if (died && deathTick < delay) info.abort = true;
         st.simulating = false;
 
-        // coste medido por tick (media movil): alimenta el horizonte adaptativo
+        // measured cost per tick (moving average): feeds the adaptive horizon
         if (info.ticks >= 8) {
             const double perTick = static_cast<double>(IB_NOW_US() - t0) / info.ticks;
             st.tickCostUs = std::clamp(0.75 * st.tickCostUs + 0.25 * perTick, 1.0, 5000.0);
         }
 
-        // tras la primera simulacion ya existen todos los nodos del fantasma: a pausa
+        // after the first simulation all ghost nodes exist: pause them
         if (!st.ghostsPaused && st.holder) {
             pauseTree(st.holder);
             st.ghostsPaused = true;
@@ -456,7 +456,7 @@ namespace {
 }
 
 // ---------------------------------------------------------------------------
-//  Ciclo de vida de los fantasmas
+//  Ghost lifecycle
 // ---------------------------------------------------------------------------
 namespace ib {
 
@@ -484,7 +484,7 @@ namespace ib {
         auto& st = S();
         if (!pl || !pl->m_objectLayer) return;
 
-        // Contenedor invisible: asi estelas/particulas del fantasma tampoco se ven.
+        // Invisible container: this way the ghost trails/particles are not seen either.
         auto* holder = CCLayer::create();
         if (!holder) return;
         holder->setVisible(false);
@@ -503,7 +503,7 @@ namespace ib {
         make(st.ghost1);
         make(st.ghost2);
 
-        // sin trabajo en reposo: particulas / animaciones de los fantasmas en pausa
+        // no work while idle: ghost particles / animations are paused
         ibx::pauseTree(holder);
 
         if (!st.ghost1) {
@@ -514,7 +514,7 @@ namespace ib {
 }
 
 // ---------------------------------------------------------------------------
-//  Hooks: entrada (handleButton) y colisiones
+//  Hooks: input (handleButton) and collisions
 // ---------------------------------------------------------------------------
 class $modify(IBGameLayer, GJBaseGameLayer) {
     void handleButton(bool down, int button, bool isPlayer1) {
@@ -546,8 +546,8 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
         PlayerObject* p1 = this->m_player1;
         PlayerObject* p2 = dual ? pl->m_player2 : nullptr;
 
-        // La asistencia de nave solo existe en 1/1. En las demas etapas,
-        // y en dual mixto, la nave conserva el input original sin alteraciones.
+        // Ship assistance only exists in 1/1. On the other stages,
+        // and in mixed dual, the ship keeps the original input untouched.
         const bool p1Ship = p1 && ibx::flagShip(p1);
         const bool p2Ship = p2 && ibx::flagShip(p2);
         const bool anyShip = p1Ship || p2Ship;
@@ -559,7 +559,7 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
             return GJBaseGameLayer::handleButton(down, button, isPlayer1);
         }
 
-        // ya hay un input retrasado en camino: este evento solo se anota
+        // a delayed input is already on its way: this event is only recorded
         if (st.pending >= 0) {
             st.flagD = (st.pendingDown != down);
             st.sinceInput = 0;
@@ -585,7 +585,7 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
             mini = p2Wave && 1.0f > ibx::vehicleSize(p2);
         }
 
-        // spam de clics en wave: se deja pasar el input crudo
+        // wave click spam: the raw input is let through
         if (st.sinceInput < 8) {
             const int c = st.rapidCount++;
             st.sinceInput = 0;
@@ -598,7 +598,7 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
             st.rapidCount = 0;
         }
 
-        // que eventos se bufferizan: todo en wave; solo "press" en el resto (y release en robot)
+        // which events are buffered: everything in wave; only "press" elsewhere (and release in robot)
         if (!p1Wave) {
             const bool p2WaveOnly = p2 && !p1Robot && p2Wave;
             if (!p2WaveOnly) {
@@ -615,15 +615,15 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
         const int baseH = mini ? 28 : (anyWave ? 38 : 48);
         const int maxDelay = shipAssist ? 1 : (anyWave ? st.limitWave : st.limitAll);
 
-        // --- presupuesto de CPU (gama media) ---
-        // Todo el calculo de este clic debe caber en `budgetMs`. El horizonte se acorta segun lo
-        // que cueste simular un tick en este dispositivo (la 1a simulacion usa <= 40 % del tiempo).
+        // --- CPU budget (mid-range devices) ---
+        // The whole calculation of this click must fit in `budgetMs`. The horizon is shortened
+        // according to the cost of simulating a tick on this device (the 1st simulation uses <= 40%).
         const std::int64_t t0 = IB_NOW_US();
         const std::int64_t budgetUs = static_cast<std::int64_t>(st.budgetMs) * 1000;
         const std::int64_t deadline = t0 + budgetUs;
-        // Reparte el presupuesto entre la simulacion base y todos los candidatos.
-        // Incluye el coste medio del retraso para no dimensionar el horizonte solo
-        // con la primera simulacion (el fallo de la formula anterior).
+        // The budget is split between the base simulation and every candidate.
+        // The average delay cost is included so the horizon is not sized only
+        // by the first simulation (the flaw of the previous formula).
         const int candidateCount = maxDelay + 1;
         const double averageDelay = static_cast<double>(maxDelay) * 0.5;
         const double usableUs = static_cast<double>(budgetUs) * 0.72;
@@ -636,7 +636,7 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
         ib::SimInfo info;
         const int f0 = ibx::simulate(pl, p1, p2, dual, 0, down, horizon, deadline, info);
 
-        // sin tiempo para decidir, o el input inmediato ya sobrevive todo el horizonte
+        // no time to decide, or the immediate input already survives the whole horizon
         if (info.timedOut || f0 >= horizon || maxDelay <= 0) {
             st.prevDown = down;
             return GJBaseGameLayer::handleButton(down, button, isPlayer1);
@@ -647,9 +647,9 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
         bool giveUp = false;
 
         if (anyWave) {
-            // Wave: no te quedes con el primer retraso que apenas cruza un umbral.
-            // Evalua todos los ticks disponibles y elige la trayectoria con mayor
-            // supervivencia; al empatar conserva el retraso menor (menos latencia).
+            // Wave: do not settle for the first delay that barely crosses a threshold.
+            // Evaluate every available tick and pick the trajectory with the
+            // longest survival; on a tie keep the shorter delay (less latency).
             int bestDelay = 0;
             int bestResult = f0;
             for (int d = 1; d <= maxDelay; ++d) {
@@ -660,8 +660,8 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
                     bestResult = r;
                     bestDelay = d;
                 }
-                // El primer retraso que sobrevive todo el horizonte es el mas corto
-                // de los resultados perfectos: no hay razon para probar mas tarde.
+                // The first delay that survives the whole horizon is the shortest
+                // of the perfect results: there is no reason to try a later one.
                 if (r >= horizon) {
                     bestResult = r;
                     bestDelay = d;
@@ -674,8 +674,8 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
                 foundRes = bestResult;
             }
         } else if (shipAssist) {
-            // Asistencia de nave muy conservadora: solo desplaza un tick si la
-            // simulacion predice una mejora clara; nunca inventa pulsaciones.
+            // Very conservative ship assistance: it only shifts one tick if the
+            // simulation predicts a clear improvement; it never invents presses.
             const int r = ibx::simulate(pl, p1, p2, dual, 1, down, horizon, deadline, info);
             if (info.abort || info.timedOut) giveUp = true;
             else if (r > f0 && r >= std::min(horizon, f0 + 4)) {
@@ -702,14 +702,14 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
             ib::onSaved(found);
             st.pendingDown = down;
             st.pending = found;
-            return;   // el input se inyectara dentro de `found` ticks
+            return;   // the input is injected within `found` ticks
         }
 
         st.prevDown = down;
         return GJBaseGameLayer::handleButton(down, button, isPlayer1);
     }
 
-    // Durante la simulacion el fantasma solo choca con solidos / peligros / pendientes.
+    // During the simulation the ghost only collides with solids / hazards / pending objects.
     void collisionCheckObjects(PlayerObject* player, std::vector<GameObject*>* objects, int count, float dt) {
         if (!ib::S().simulating || !objects) {
             return GJBaseGameLayer::collisionCheckObjects(player, objects, count, dt);
@@ -733,7 +733,7 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
 };
 
 // ---------------------------------------------------------------------------
-//  Hooks: jugador
+//  Hooks: player
 // ---------------------------------------------------------------------------
 class $modify(IBPlayer, PlayerObject) {
     void update(float dt) {
@@ -745,7 +745,7 @@ class $modify(IBPlayer, PlayerObject) {
             if (pl && self == pl->m_player1) {
 
 #ifdef GEODE_IS_WINDOWS
-                // F6 = cambiar de etapa (en Android se usa el boton tactil)
+                // F6 = change stage (on Android the touch button is used)
                 if (GetAsyncKeyState(0x75) & 1) {
                     ib::cycleStage();
                 }
@@ -760,7 +760,7 @@ class $modify(IBPlayer, PlayerObject) {
                     const bool p2Ship = dual && ibx::flagShip(pl->m_player2);
                     const bool shipAssist = st.stage == 0 && p1Ship && (!dual || p2Ship);
                     if ((p1Ship || p2Ship) && !shipAssist) {
-                        // En etapas distintas de 1/1, nave = input crudo.
+                        // On stages other than 1/1, ship = raw input.
                         st.pending = -1;
                         st.flagD = false;
                         const bool d = st.lastDown;
@@ -791,7 +791,7 @@ class $modify(IBPlayer, PlayerObject) {
 
         PlayerObject::update(dt);
 
-        // dt de un tick: se muestrea 1 de cada 8 ticks y solo con el buffer activo
+        // tick dt: sampled once every 8 ticks and only with the buffer active
         if (st.enabled && !st.simulating && (st.dtCounter++ & 7u) == 0) {
             auto* pl = PlayLayer::get();
             if (pl) {
@@ -801,7 +801,7 @@ class $modify(IBPlayer, PlayerObject) {
         }
     }
 
-    // --- efectos secundarios que se anulan mientras se simula ---
+    // --- side effects that are disabled while simulating ---
     void incrementJumps() {
         if (ib::S().simulating) return;
         PlayerObject::incrementJumps();
@@ -859,7 +859,7 @@ class $modify(IBPlayLayer, PlayLayer) {
     void destroyPlayer(PlayerObject* player, GameObject* object) {
         auto& st = ib::S();
         if (st.simulating && (player == st.ghost1 || player == st.ghost2)) {
-            st.simDied = true;   // murio el fantasma: no se mata al jugador real
+            st.simDied = true;   // the ghost died: the real player is not killed
             return;
         }
         st.pending = -1;
@@ -870,7 +870,7 @@ class $modify(IBPlayLayer, PlayLayer) {
     }
 
     void playEndAnimationToPos(cocos2d::CCPoint pos) {
-        if (ib::S().simulating) return;   // el fantasma no debe terminar el nivel
+        if (ib::S().simulating) return;   // the ghost must not finish the level
         PlayLayer::playEndAnimationToPos(pos);
     }
 };

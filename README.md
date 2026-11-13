@@ -17,8 +17,24 @@ Every `.geode` is a combined Android32 + Android64 build. Install with Geode.
 | Node IDs | `geode.node-ids` | [v1.23.4](https://github.com/Exodi-dio/gd-mods/releases/tag/node-ids-v1.23.4-android) |
 | Icon Gradients | `zilko.icon_gradients` | [v1.3.11](https://github.com/Exodi-dio/gd-mods/releases/tag/icon-gradients-v1.3.11-android) |
 | Death Animations | `zilko.death_animations` | [v1.1.4](https://github.com/Exodi-dio/gd-mods/releases/tag/death-animations-v1.1.4-android) |
-| Predictive Input Buffer | `ai.predictivebuffer` | [v1.2.1](https://github.com/Exodi-dio/gd-mods/releases/tag/predictive-input-buffer-v1.2.1-android) |
-| GD Agent | `exodi.gd-agent` | [v0.1.0](https://github.com/Exodi-dio/gd-mods/releases/tag/gd-agent-v0.1.0-android) |
+| Predictive Input Buffer (touch port) | `ai.predictivebuffer` | [v1.2.1](https://github.com/Exodi-dio/gd-mods/releases/tag/predictive-input-buffer-v1.2.1-android) |
+
+### Predictive Input Buffer ports
+
+Every known public source of the Predictive Input Buffer mod was ported to Geode 6 / GD 2.2091.
+Install only one of them at a time, they share mod IDs.
+
+| Port | Mod ID | Source |
+|------|--------|--------|
+| Touch port | `ai.predictivebuffer` | Savxy/PredictiveBufferAndroid |
+| Simulation v1 | `ai.predictivebuffer` | fraudian/Predictive-Input-Buffer |
+| Simulation v2 | `ai.predictivebuffer` | fraudian/Predictive-Input-Buffer-V2 |
+| Stage prototype | `cesar.input-buffer` | CesarGD2344/PredictiveInputBuffer |
+| Stage + orb pre-click | `cesar.input-buffer` | crezcentre/PredictiveInputBuffer |
+| Press/release buffer | `cesar.input-buffer` | dudeman-hash/PredictiveInputBuffer-iOS |
+| F6 stage recreation | `tuusuario.predictive-input-buffer` | johanxwf/predictive-input-buffer |
+| F6 stage recreation | `zbevv.predictive-input-buffer` | person-kat/dynamic-input-buffer-geode |
+
 
 ## Notes
 

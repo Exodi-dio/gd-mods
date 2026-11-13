@@ -1,10 +1,10 @@
-// Predictive Input Buffer - recreacion basada en el log de la consola (v4.7)
+// Predictive Input Buffer - recreation based on the console log of v4.7
 //
-// Idea: en lugar de aplicar cada input (press/release) al instante, se encola
-// y se aplica N "ticks" fisicos despues. N depende de la etapa activa y de si
-// el jugador esta en modo wave. F6 cicla: STAGE 1 -> 2 -> 3 -> 4 -> OFF.
+// Instead of applying every input (press/release) instantly, the input is queued
+// and applied N physics ticks later. N depends on the active stage and on whether
+// the player is in wave mode. F6 cycles: STAGE 1 -> 2 -> 3 -> 4 -> OFF.
 //
-// 1 tick = 1/240 s  (4 ticks = 1 frame @ 60fps, igual que en el log original)
+// 1 tick = 1/240 s  (4 ticks = 1 frame @ 60fps, same as the original log)
 
 #include <Geode/Geode.hpp>
 #include <Geode/modify/GJBaseGameLayer.hpp>
@@ -17,9 +17,9 @@ using namespace geode::prelude;
 namespace pib {
     struct Stage { int all; int wave; };
     constexpr Stage STAGES[4] = { {2, 2}, {4, 4}, {8, 8}, {16, 8} };
-    constexpr int OFF = 4; // indice 4 = desactivado
+    constexpr int OFF = 4; // index 4 means the buffer is disabled
 
-    inline int g_stage = 0; // arranca en STAGE 1
+    inline int g_stage = 0; // starts on STAGE 1
 
     inline bool verbose() {
         return Mod::get()->getSettingValue<bool>("verbose-log");
@@ -42,20 +42,18 @@ struct PendingInput {
     bool down;
     int button;
     bool player1;
-    int remaining; // ticks que faltan para aplicarlo
+    int remaining; // ticks left before the input is applied
 };
 
+namespace pib {
+    inline std::deque<PendingInput> g_queue;
+    inline bool g_applying = false;
+}
+
 class $modify(PIBBaseGameLayer, GJBaseGameLayer) {
-    struct Fields {
-        std::deque<PendingInput> queue;
-        bool applying = false;
-    };
-
     void handleButton(bool down, int button, bool isPlayer1) {
-        auto f = m_fields.self();
-
-        // Pasar directo si esta apagado o si estamos reinyectando un input
-        if (f->applying || pib::g_stage == pib::OFF) {
+        // Pass through when the buffer is off or when we are re-injecting an input
+        if (pib::g_applying || pib::g_stage == pib::OFF) {
             GJBaseGameLayer::handleButton(down, button, isPlayer1);
             return;
         }
@@ -65,7 +63,7 @@ class $modify(PIBBaseGameLayer, GJBaseGameLayer) {
         auto stage = pib::STAGES[pib::g_stage];
         int delay = isWave ? stage.wave : stage.all;
 
-        f->queue.push_back({ down, button, isPlayer1, delay });
+        pib::g_queue.push_back({ down, button, isPlayer1, delay });
 
         if (pib::verbose()) {
             log::info(
@@ -75,31 +73,28 @@ class $modify(PIBBaseGameLayer, GJBaseGameLayer) {
         }
     }
 
-    // Se llama una vez por paso de fisica: aqui descontamos ticks.
-   void processCommands(float dt, bool isHalfTick, bool isLastTick) {
-        auto f = m_fields.self();
-
-        for (auto it = f->queue.begin(); it != f->queue.end();) {
+    // Runs once per physics step: this is where the tick countdown happens.
+    void processCommands(float dt, bool isHalfTick, bool isLastTick) {
+        for (auto it = pib::g_queue.begin(); it != pib::g_queue.end();) {
             it->remaining -= 1;
             if (it->remaining <= 0) {
-                f->applying = true;
+                pib::g_applying = true;
                 GJBaseGameLayer::handleButton(it->down, it->button, it->player1);
-                f->applying = false;
-                it = f->queue.erase(it);
+                pib::g_applying = false;
+                it = pib::g_queue.erase(it);
             } else {
                 ++it;
             }
         }
 
-   GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick);
+        GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick);
     }
 };
 
 class $modify(PIBPlayLayer, PlayLayer) {
     void resetLevel() {
-        // Vaciar la cola al reiniciar para no filtrar inputs entre intentos
-        static_cast<PIBBaseGameLayer*>(static_cast<GJBaseGameLayer*>(this))
-            ->m_fields->queue.clear();
+        // Clear the queue on restart so inputs do not leak between attempts
+        pib::g_queue.clear();
         PlayLayer::resetLevel();
     }
 };

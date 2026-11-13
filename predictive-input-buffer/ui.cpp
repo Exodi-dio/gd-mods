@@ -133,7 +133,7 @@ namespace {
             makeBtn("Texts", menu_selector(ColorTargetLayer::onText), -40.f);
             makeBtn("Buttons", menu_selector(ColorTargetLayer::onBtn), -100.f);
 
-            // Boton de cierre reducido y colocado dentro del panel.
+            // Smaller close button placed inside the panel.
             auto sprClose = ButtonSprite::create("X", "bigFont.fnt", "GJ_button_04.png", 0.5f);
             if (sprClose) {
                 sprClose->setCascadeColorEnabled(true);

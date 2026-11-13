@@ -1,0 +1,11 @@
+{
+	"geode": "6.0.0-alpha.1",
+	"gd": {
+		"android": "2.2091"
+	},
+	"version": "v1.0.0",
+	"id": "ai.predictivebuffer",
+	"name": "Predictive Input Buffer",
+	"developer": "lilWC",
+	"description": "Trajectory-based 1-2 frame press and wave release input buffer."
+}

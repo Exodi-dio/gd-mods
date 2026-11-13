@@ -76,25 +76,25 @@ namespace ib {
         return g_state;
     }
 
-    // Etapas
+    // Stages
     void applyStage(int stage);
     void setStage(int stage);
     void cycleStage();
     void loadSettings();
 
-    // Botón flotante
+    // Floating button
     bool cfgShowButton();
     void cfgSetShowButton(bool v);
 
-    // Fondo del botón
+    // Button background
     bool cfgShowBg();
     void cfgSetShowBg(bool v);
 
-    // Opacidad
+    // Opacity
     int cfgOpacity();
     void cfgSetOpacity(int v);
 
-    // Colores
+    // Colors
     int cfgColorBg();
     void cfgSetColorBg(int c);
 
@@ -107,19 +107,19 @@ namespace ib {
     int cfgColorBtn();
     void cfgSetColorBtn(int c);
 
-    // Ajustes de rendimiento
+    // Performance settings
     bool cfgLogSaves();
     void cfgSetLogSaves(bool v);
 
     int cfgBudgetMs();
     void cfgSetBudgetMs(int v);
 
-    // Ciclo de vida
+    // Lifecycle
     void createGhosts(PlayLayer* pl);
     void destroyGhosts();
     void resetRuntime();
 
-    // Interfaz
+    // Interface
     void onStageChanged();
     void onSaved(int ticks);
     void attachHud(cocos2d::CCNode* parent);

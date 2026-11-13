@@ -1,0 +1,11 @@
+{
+	"geode": "6.0.0-alpha.1",
+	"gd": {
+		"android": "2.2091"
+	},
+	"version": "v0.1.0",
+	"id": "cesar.input-buffer",
+	"name": "Predictive Input Buffer",
+	"developer": "CesarGD96",
+	"description": "F6 cycles through five input buffer stages."
+}
