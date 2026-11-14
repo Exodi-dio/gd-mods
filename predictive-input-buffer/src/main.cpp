@@ -662,7 +662,8 @@ class $modify(IBEffectObject, EffectGameObject) {
 class $modify(IBGameObject, GameObject) {
     void playShineEffect() {
         auto& st = ib::S();
-        if (st.simulating && (this == st.ghost1 || this == st.ghost2)) return;
+        auto* object = static_cast<GameObject*>(this);
+        if (st.simulating && (object == st.ghost1 || object == st.ghost2)) return;
         GameObject::playShineEffect();
     }
 };

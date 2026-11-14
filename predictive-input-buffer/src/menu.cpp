@@ -101,7 +101,7 @@ namespace ib {
             }
 
             bool init() {
-                if (!geode::Popup::init(380.f, 290.f, "GJ_square01.png", CCRect::Zero)) return false;
+                if (!geode::Popup::init(380.f, 290.f, "GJ_square01.png", CCRect{})) return false;
 
                 setTitle("Predictive Buffer v2");
 
@@ -122,7 +122,7 @@ namespace ib {
         private:
             std::vector<cocos2d::CCNode*> m_pages[kPageCount];
 
-            cocos2d::CCMenuItemSpriteExtra* m_tabs[kPageCount] = {};
+            CCMenuItemSpriteExtra* m_tabs[kPageCount] = {};
             cocos2d::CCLabelBMFont* m_pageTitle = nullptr;
 
             ButtonSprite* m_bufferBtn = nullptr;
@@ -146,13 +146,12 @@ namespace ib {
             cocos2d::CCLayerColor* m_dimLayer = nullptr;
 
             int m_step = 1;
-            int m_currentPage = kPageBuffer;
 
             // -----------------------------------------------------------------
             //  Building blocks
             // -----------------------------------------------------------------
 
-            cocos2d::CCMenuItemSpriteExtra* makeItem(
+            CCMenuItemSpriteExtra* makeItem(
                 cocos2d::CCNode* sprite,
                 std::function<void()> callback
             ) {
@@ -195,6 +194,15 @@ namespace ib {
                 label->setScale(scale);
                 m_mainLayer->addChildAtPosition(label, geode::Anchor::Center, {x, y}, true);
                 m_pages[page].push_back(label);
+                return label;
+            }
+
+            // A label that stays visible on every page.
+            cocos2d::CCLabelBMFont* addStaticLabel(const char* font, float scale, float x, float y) {
+                auto* label = CCLabelBMFont::create("", font);
+                if (!label) return nullptr;
+                label->setScale(scale);
+                m_mainLayer->addChildAtPosition(label, geode::Anchor::Center, {x, y}, true);
                 return label;
             }
 
@@ -250,7 +258,7 @@ namespace ib {
                     m_buttonMenu->addChildAtPosition(item, geode::Anchor::Center, {tabX[i], 108.f}, true);
                 }
 
-                m_pageTitle = addLabel(kPageBuffer, "goldFont.fnt", 0.45f, 0.f, 82.f);
+                m_pageTitle = addStaticLabel("goldFont.fnt", 0.45f, 0.f, 82.f);
 
                 auto* helpSprite = cocos2d::CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
                 if (helpSprite) {
@@ -494,8 +502,6 @@ namespace ib {
             // -----------------------------------------------------------------
 
             void showPage(int page) {
-                m_currentPage = page;
-
                 for (int i = 0; i < kPageCount; ++i) {
                     bool visible = i == page;
                     for (auto* node : m_pages[i]) {
@@ -631,73 +637,50 @@ namespace ib {
                 auto* mod = Mod::get();
                 auto& cfg = S().cfg;
 
-                if (m_bufferBtn) {
-                    m_bufferBtn->setString(cfg.enabled ? "Buffer: ON" : "Buffer: OFF");
-                }
-                if (m_spamGuardBtn) {
-                    m_spamGuardBtn->setString(cfg.spamGuard ? "Spam guard: ON" : "Spam guard: OFF");
-                }
-                if (m_stepBtn) {
-                    m_stepBtn->setString(fmt::format("Step: {}", m_step));
-                }
-                if (m_normalLabel) {
-                    m_normalLabel->setString(fmt::format("Normal: {} ticks", cfg.normalTicks));
-                }
-                if (m_waveLabel) {
-                    m_waveLabel->setString(fmt::format("Wave: {} ticks", cfg.waveTicks));
-                }
-                if (m_spamLabel) {
-                    m_spamLabel->setString(fmt::format("Spam: {} ticks", cfg.spamInterval));
-                }
-                if (m_framesLabel) {
-                    m_framesLabel->setString(fmt::format(
-                        "Normal {:.2f}f | Wave {:.2f}f @ 60fps (4 ticks = 1 frame)",
-                        static_cast<double>(cfg.normalTicks),
-                        static_cast<double>(cfg.waveTicks)
-                    ));
-                }
-                if (m_noclipBtn) {
-                    m_noclipBtn->setString(cfg.noclip ? "Noclip: ON" : "Noclip: OFF");
-                }
-                if (m_speedLabel) {
-                    m_speedLabel->setString(fmt::format("Speed: x{:.2f}", cfg.gameSpeed));
-                }
+                auto setLabel = [](cocos2d::CCLabelBMFont* label, std::string text) {
+                    if (label) label->setString(text.c_str());
+                };
+                auto setButton = [](ButtonSprite* button, std::string text) {
+                    if (button) button->setString(text.c_str());
+                };
+
+                setButton(m_bufferBtn, cfg.enabled ? "Buffer: ON" : "Buffer: OFF");
+                setButton(m_spamGuardBtn, cfg.spamGuard ? "Spam guard: ON" : "Spam guard: OFF");
+                setButton(m_stepBtn, fmt::format("Step: {}", m_step));
+                setLabel(m_normalLabel, fmt::format("Normal: {} ticks", cfg.normalTicks));
+                setLabel(m_waveLabel, fmt::format("Wave: {} ticks", cfg.waveTicks));
+                setLabel(m_spamLabel, fmt::format("Spam: {} ticks", cfg.spamInterval));
+                setLabel(m_framesLabel, fmt::format(
+                    "Normal {:.2f}f | Wave {:.2f}f @ 60fps (4 ticks = 1 frame)",
+                    static_cast<double>(cfg.normalTicks),
+                    static_cast<double>(cfg.waveTicks)
+                ));
+                setButton(m_noclipBtn, cfg.noclip ? "Noclip: ON" : "Noclip: OFF");
+                setLabel(m_speedLabel, fmt::format("Speed: x{:.2f}", cfg.gameSpeed));
 
                 auto path = mod->getSettingValue<asp::fs::Path>("background-image");
-                if (m_imageLabel) {
-                    if (path.empty()) {
-                        m_imageLabel->setString("Image: none");
-                    } else {
-                        auto name = std::filesystem::path(path.string()).filename().string();
-                        m_imageLabel->setString(fmt::format("Image: {}...", name));
-                    }
+                if (path.empty()) {
+                    setLabel(m_imageLabel, "Image: none");
+                } else {
+                    auto name = std::filesystem::path(path.string()).filename().string();
+                    setLabel(m_imageLabel, fmt::format("Image: {}...", name));
                 }
 
                 int opacity = std::clamp(mod->getSettingValue<int>("background-opacity"), 0, 100);
-                if (m_opacityLabel) {
-                    m_opacityLabel->setString(fmt::format("Opacity: {}%", opacity));
-                }
+                setLabel(m_opacityLabel, fmt::format("Opacity: {}%", opacity));
 
                 int dim = std::clamp(mod->getSettingValue<int>("background-dim"), 0, 90);
-                if (m_dimLabel) {
-                    m_dimLabel->setString(fmt::format("Darken: {}%", dim));
-                }
+                setLabel(m_dimLabel, fmt::format("Darken: {}%", dim));
 
                 int autoClose = mod->getSettingValue<int>("auto-close");
-                if (m_autoCloseLabel) {
-                    if (autoClose < 1) {
-                        m_autoCloseLabel->setString("Auto close: never");
-                    } else {
-                        m_autoCloseLabel->setString(fmt::format("Auto close: {} s", autoClose));
-                    }
+                if (autoClose < 1) {
+                    setLabel(m_autoCloseLabel, "Auto close: never");
+                } else {
+                    setLabel(m_autoCloseLabel, fmt::format("Auto close: {} s", autoClose));
                 }
 
-                if (m_buttonSizeLabel) {
-                    m_buttonSizeLabel->setString(fmt::format("Button size: {:.1f}", cfg.buttonScale));
-                }
-                if (m_placeBtn) {
-                    m_placeBtn->setString(fmt::format("Place: {}", cfg.buttonCorner));
-                }
+                setLabel(m_buttonSizeLabel, fmt::format("Button size: {:.1f}", cfg.buttonScale));
+                setButton(m_placeBtn, fmt::format("Place: {}", cfg.buttonCorner));
             }
         };
 
