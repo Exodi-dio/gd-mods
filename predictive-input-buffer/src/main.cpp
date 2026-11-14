@@ -376,13 +376,9 @@ class $modify(IBPlayLayer, PlayLayer) {
 
         auto& st = ib::S();
 
-        if (!this->m_isPracticeMode) {
-            st.gameSpeedApplied = 0.f;
-            st.gameSpeedPlayer = nullptr;
-            return;
-        }
+        // Outside of practice mode the game always runs at 1x.
+        float speed = this->m_isPracticeMode ? st.cfg.gameSpeed : 1.f;
 
-        float speed = st.cfg.gameSpeed;
         if (speed == st.gameSpeedApplied && st.gameSpeedPlayer == this->m_player1) return;
 
         st.gameSpeedApplied = speed;
@@ -405,9 +401,15 @@ class $modify(IBPlayLayer, PlayLayer) {
             return;
         }
 
-        if (st.cfg.noclip && this->m_isPracticeMode && player == this->m_player1) {
+        // Noclip: the player does not die from obstacles (practice mode only).
+        if (st.cfg.noclip && this->m_isPracticeMode) {
             return;
         }
+
+        // A dead player drops the buffered input.
+        st.pendingDelay = -1;
+        st.releasePending = false;
+        st.lastBufferedDown = false;
 
         PlayLayer::destroyPlayer(player, object);
     }
@@ -584,8 +586,12 @@ class $modify(IBGameLayer, GJBaseGameLayer) {
 
 class $modify(IBPlayerObject, PlayerObject) {
     void updateTimeMod(float speed, bool noEffects) {
-        // The time mod must not change while the trajectory is simulated.
-        if (ib::S().simulating) return;
+        auto& st = ib::S();
+
+        // While the trajectory is simulated only the ghosts may change their
+        // time mod, the real players keep theirs.
+        if (st.simulating && this != st.ghost1 && this != st.ghost2) return;
+
         PlayerObject::updateTimeMod(speed, noEffects);
     }
 
